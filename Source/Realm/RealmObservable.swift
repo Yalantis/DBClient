@@ -37,7 +37,7 @@ public class RealmObservable<T: Object>: RequestObservable<T> {
     }
   }
   
-  public override func stopObserving() {
+  public func stopObserving() {
     notificationToken = nil
   }
   

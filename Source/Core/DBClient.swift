@@ -104,4 +104,47 @@ public extension DBClient {
     return Task(nil)
   }
 
+  /**
+   Deletes object from database.
+
+   - Parameter object: object to be deleted
+
+   - Returns: `Task` with deleted object or appropriate error in case of failure.
+   */
+  func delete<T: Stored>(_ object: T) -> Task<T> {
+    return convertArrayTaskToSingleObject(delete([object]))
+  }
+
+  /**
+   Updates changed performed with object to database.
+
+   - Parameter object: object to be updated
+
+   - Returns: `Task` with updated object or appropriate error in case of failure.
+   */
+  func update<T: Stored>(_ object: T) -> Task<T> {
+    return convertArrayTaskToSingleObject(update([object]))
+  }
+
+  /**
+   Saves object to database.
+
+   - Parameter object: object to be saved
+
+   - Returns: `Task` with saved object or appropriate error in case of failure.
+   */
+  func save<T: Stored>(_ object: T) -> Task<T> {
+    return convertArrayTaskToSingleObject(save([object]))
+  }
+
+  private func convertArrayTaskToSingleObject<T>(_ task: Task<[T]>) -> Task<T> {
+    if let objects = task.result, let object = objects.first {
+      return Task<T>(object)
+    } else if let error = task.error {
+      return Task<T>(error: error)
+    } else { // no objects returned
+      return Task<T>.cancelledTask()
+    }
+  }
+
 }

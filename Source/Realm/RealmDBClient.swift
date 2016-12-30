@@ -120,5 +120,5 @@ extension RealmDBClient: DBClient {
 //    return RealmObservable(request: request, realm: realm)
     return RequestObservable(request: request)
   }
-  
+
 }
