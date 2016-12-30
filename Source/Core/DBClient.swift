@@ -138,12 +138,14 @@ public extension DBClient {
   }
 
   private func convertArrayTaskToSingleObject<T>(_ task: Task<[T]>) -> Task<T> {
-    if let objects = task.result, let object = objects.first {
-      return Task<T>(object)
-    } else if let error = task.error {
-      return Task<T>(error: error)
-    } else { // no objects returned
-      return Task<T>.cancelledTask()
+    return task.continueWithTask { task -> Task<T> in
+      if let objects = task.result, let object = objects.first {
+        return Task<T>(object)
+      } else if let error = task.error {
+        return Task<T>(error: error)
+      } else { // no objects returned
+        return Task<T>.cancelledTask()
+      }
     }
   }
 
