@@ -98,10 +98,13 @@ public extension DBClient {
     
     let predicate = NSPredicate(format: "\(primaryKey) == %@", primaryValue)
     let request = FetchRequest<T>(predicate: predicate, fetchLimit: 1)
-    if let first = execute(request).result?.first {
-      return Task(first)
+
+    return execute(request).continueWithTask { task -> Task<T?> in
+      if let first = task.result?.first {
+        return Task(first)
+      }
+      return Task(nil)
     }
-    return Task(nil)
   }
 
   /**
