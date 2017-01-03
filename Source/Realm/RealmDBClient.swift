@@ -27,7 +27,7 @@ protocol RealmModelConvertible: Stored {
      
     - Returns: Fulfilled model instance
   */
-  static func from(_ realmObject: Object) -> Self
+  static func from(_ realmObject: Object) -> Stored
 
   /**
     Executes backward mapping from `Realm.Object`

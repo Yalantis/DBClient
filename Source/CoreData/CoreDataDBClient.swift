@@ -28,7 +28,7 @@ public protocol CoreDataModelConvertible: Stored {
      
     - Returns: Mapped object.
   */
-  static func from(_ managedObject: NSManagedObject) -> Self
+  static func from(_ managedObject: NSManagedObject) -> Stored
 
   /**
     Executes backward mapping to `NSManagedObject` from given context
