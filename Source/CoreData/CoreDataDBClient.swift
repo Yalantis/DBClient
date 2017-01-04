@@ -66,7 +66,8 @@ public class CoreDataDBClient {
   }()
 
   fileprivate lazy var managedObjectModel: NSManagedObjectModel = {
-    let modelURL = Bundle.main.url(forResource: CoreDataDBClient.modelName, withExtension: "momd")!
+    let bundle = Bundle(for: type(of: self))
+    let modelURL = bundle.url(forResource: CoreDataDBClient.modelName, withExtension: "momd")!
     return NSManagedObjectModel(contentsOf: modelURL)!
   }()
 
