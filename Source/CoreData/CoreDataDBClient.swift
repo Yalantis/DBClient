@@ -55,6 +55,9 @@ public class CoreDataDBClient {
 
   public static let modelName = "CoreData"
 
+  public init() {
+  }
+
   // MARK: - CoreData stack
 
   fileprivate lazy var applicationDocumentsDirectory: URL = {
