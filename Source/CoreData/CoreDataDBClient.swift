@@ -52,23 +52,63 @@ extension NSManagedObject: Stored {}
   Implementation of database client for CoreData storage type.
 */
 public class CoreDataDBClient {
-  
-  public init() {
-    initializeCoreDataStack()
-  }
-  
-  fileprivate var container: NSPersistentContainer!
-  
-  private func initializeCoreDataStack() {
-    container = NSPersistentContainer(name: "CoreData")
-    container.loadPersistentStores { (storeDescription, error) in
-      if let error = error {
-        fatalError("Unresolved error \(error), \(error.localizedDescription)")
-      }
+
+  public static let modelName = "CoreData"
+
+  // MARK: - CoreData stack
+
+  fileprivate lazy var applicationDocumentsDirectory: URL = {
+    let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+    return urls[urls.count-1]
+  }()
+
+  fileprivate lazy var managedObjectModel: NSManagedObjectModel = {
+    let modelURL = Bundle.main.url(forResource: CoreDataDBClient.modelName, withExtension: "momd")!
+    return NSManagedObjectModel(contentsOf: modelURL)!
+  }()
+
+  fileprivate lazy var persistentStoreCoordinator: NSPersistentStoreCoordinator = {
+    let coordinator = NSPersistentStoreCoordinator(managedObjectModel: self.managedObjectModel)
+    let url = self.applicationDocumentsDirectory.appendingPathComponent("\(CoreDataDBClient.modelName).sqlite")
+    do {
+      try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
+    } catch {
+      var dict = [String: AnyObject]()
+      dict[NSLocalizedDescriptionKey] = "Failed to initialize the application's saved data" as AnyObject?
+      var failureReason = "There was an error creating or loading the application's saved data."
+      dict[NSLocalizedFailureReasonErrorKey] = failureReason as AnyObject?
+
+      dict[NSUnderlyingErrorKey] = error as NSError
+      let wrappedError = NSError(domain: "com.Yalantis.DBClient", code: 9999, userInfo: dict)
+      NSLog("Unresolved error \(wrappedError), \(wrappedError.userInfo)")
+      abort()
     }
+
+    return coordinator
+  }()
+
+  fileprivate lazy var managedObjectContext: NSManagedObjectContext = {
+    let coordinator = self.persistentStoreCoordinator
+    var managedObjectContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+    managedObjectContext.persistentStoreCoordinator = coordinator
+    return managedObjectContext
+  }()
+
+  fileprivate func performBackgroundTask(closure: @escaping (NSManagedObjectContext) -> Void) {
+    let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+    context.parent = managedObjectContext
+    context.perform {
+      closure(context)
+    }
+  }
+
+  fileprivate func fetchRequest(for entity: CoreDataModelConvertible.Type) -> NSFetchRequest<NSFetchRequestResult> {
+    return NSFetchRequest(entityName: entity.entityName)
   }
   
 }
+
+// MARK: - DBClient methods
 
 extension CoreDataDBClient: DBClient {
   
@@ -79,8 +119,8 @@ extension CoreDataDBClient: DBClient {
     
     let taskCompletionSource = TaskCompletionSource<[T]>()
     
-    container.performBackgroundTask { context in
-      let fetchRequest = coreDataModelType.managedObjectClass().fetchRequest()
+    performBackgroundTask { context in
+      let fetchRequest = self.fetchRequest(for: coreDataModelType)
       fetchRequest.predicate = request.predicate
       fetchRequest.sortDescriptors = [request.sortDescriptor].flatMap { $0 }
       fetchRequest.fetchLimit = request.fetchLimit
@@ -95,12 +135,12 @@ extension CoreDataDBClient: DBClient {
         taskCompletionSource.set(error: error)
       }
     }
-    
+
     return taskCompletionSource.task
   }
 
   public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
-    return CoreDataObservable(request: request, context: container.newBackgroundContext())
+    return CoreDataObservable(request: request, context: managedObjectContext)
   }
   
   public func fetch<T: Stored>(id: String) -> Task<[T]> {
@@ -115,7 +155,7 @@ extension CoreDataDBClient: DBClient {
     // After all inserts/updates try to save context
     
     let taskCompletionSource = TaskCompletionSource<[T]>()
-    container.performBackgroundTask { context in
+    performBackgroundTask { context in
       for object in objects {
         if let coreDataConvertibleObject = object as? CoreDataModelConvertible {
           let _ = coreDataConvertibleObject.toManagedObject(in: context)
@@ -151,7 +191,7 @@ extension CoreDataDBClient: DBClient {
     // After all deletes try to save context
 
     let taskCompletionSource = TaskCompletionSource<[T]>()
-    container.performBackgroundTask { context in
+    performBackgroundTask { context in
       for object in objects {
         if let coreDataConvertibleObject = object as? CoreDataModelConvertible {
           let coreDataObject = coreDataConvertibleObject.toManagedObject(in: context)
@@ -185,8 +225,8 @@ extension CoreDataDBClient: DBClient {
     
     let taskCompletionSource = TaskCompletionSource<[T]>()
     
-    container.performBackgroundTask { context in
-      let fetchRequest = coreDataModelType.managedObjectClass().fetchRequest()
+    performBackgroundTask { context in
+      let fetchRequest = self.fetchRequest(for: coreDataModelType)
       fetchRequest.predicate = predicate
       do {
         let result = try context.fetch(fetchRequest) as! [NSManagedObject]
