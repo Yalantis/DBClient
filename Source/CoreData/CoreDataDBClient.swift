@@ -53,27 +53,29 @@ extension NSManagedObject: Stored {}
 */
 public class CoreDataDBClient {
 
-  public static let modelName = "CoreData"
+  private var modelName: String
+  private var bundle: Bundle
 
-  public init() {
+  public init(forModel modelName: String = "CoreData", in bundle: Bundle = Bundle.main) {
+    self.modelName = modelName
+    self.bundle = bundle
   }
 
   // MARK: - CoreData stack
 
   fileprivate lazy var applicationDocumentsDirectory: URL = {
     let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-    return urls[urls.count-1]
+    return urls[urls.count - 1]
   }()
 
   fileprivate lazy var managedObjectModel: NSManagedObjectModel = {
-    let bundle = Bundle(for: type(of: self))
-    let modelURL = bundle.url(forResource: CoreDataDBClient.modelName, withExtension: "momd")!
+    let modelURL = self.bundle.url(forResource: self.modelName, withExtension: "momd")!
     return NSManagedObjectModel(contentsOf: modelURL)!
   }()
 
   fileprivate lazy var persistentStoreCoordinator: NSPersistentStoreCoordinator = {
     let coordinator = NSPersistentStoreCoordinator(managedObjectModel: self.managedObjectModel)
-    let url = self.applicationDocumentsDirectory.appendingPathComponent("\(CoreDataDBClient.modelName).sqlite")
+    let url = self.applicationDocumentsDirectory.appendingPathComponent("\(self.modelName).sqlite")
     do {
       try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
     } catch {
