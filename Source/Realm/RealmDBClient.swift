@@ -52,30 +52,6 @@ public class RealmDBClient {
 
 extension RealmDBClient: DBClient {
   
-  public func fetch<T: Stored>(id: String) -> Task<[T]> {
-    guard let realmModelType = T.self as? RealmModelConvertible.Type else {
-      fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
-    }
-    let result = realm.objects(realmModelType.realmClass())
-    let objects = Array(result.map { realmModelType.from($0) as! T})
-        
-    return Task(objects)
-  }
-  
-  public func fetch<T: Stored>(with predicate: NSPredicate?) -> Task<[T]> {
-    guard let realmModelType = T.self as? RealmModelConvertible.Type else {
-      fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
-    }
-    
-    var result = realm.objects(realmModelType.realmClass())
-    if let predicate = predicate {
-      result = result.filter(predicate)
-    }
-    let objects = Array(result.map { realmModelType.from($0) as! T})
-    
-    return  Task(objects)
-  }
-  
   public func save<T: Stored>(_ objects: [T]) -> Task<[T]> {
     let taskCompletionSource = TaskCompletionSource<[T]>()
     

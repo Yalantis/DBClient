@@ -135,9 +135,7 @@ extension CoreDataDBClient: DBClient {
         let result = try context.fetch(fetchRequest) as! [NSManagedObject]
         let resultModels = result.map { coreDataModelType.from($0) as! T }
         taskCompletionSource.set(result: resultModels)
-      } catch {
-        // TODO - generate proper error
-        let error = NSError()
+      } catch let error {
         taskCompletionSource.set(error: error)
       }
     }
@@ -147,11 +145,6 @@ extension CoreDataDBClient: DBClient {
 
   public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
     return CoreDataObservable(request: request, context: managedObjectContext)
-  }
-  
-  public func fetch<T: Stored>(id: String) -> Task<[T]> {
-    let predicate = NSPredicate(format: "id = %@", id)
-    return fetch(with: predicate)
   }
   
   public func save<T: Stored>(_ objects: [T]) -> Task<[T]> {
@@ -170,9 +163,7 @@ extension CoreDataDBClient: DBClient {
       do {
         try context.save()
         taskCompletionSource.set(result: objects)
-      } catch {
-        // TODO - generate proper error
-        let error = NSError()
+      } catch let error {
         taskCompletionSource.set(error: error)
       }
     }
@@ -207,40 +198,7 @@ extension CoreDataDBClient: DBClient {
       do {
         try context.save()
         taskCompletionSource.set(result: objects)
-      } catch {
-        // TODO - generate proper error
-        let error = NSError()
-        taskCompletionSource.set(error: error)
-      }
-    }
-    return taskCompletionSource.task
-  }
-
-  public func fetch<T: Stored>(with predicate: NSPredicate? = nil) -> Task<[T]> {
-    // 1. Make sure passed T type conforms to CoreDataModelConvertible protocol to fetch from CoreData DB
-    // 2. Convert type to CoreDataModelConvertible type
-    // 3. Create required NSFetchRequest with passed predicate
-    // 4. Fetch items of CoreDataModelConvertible type
-    // 5. Convert fetched items back to T type
-    
-    // warning: Use preconditions
-    
-    guard let coreDataModelType = T.self as? CoreDataModelConvertible.Type else {
-      fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
-    }
-    
-    let taskCompletionSource = TaskCompletionSource<[T]>()
-    
-    performBackgroundTask { context in
-      let fetchRequest = self.fetchRequest(for: coreDataModelType)
-      fetchRequest.predicate = predicate
-      do {
-        let result = try context.fetch(fetchRequest) as! [NSManagedObject]
-        let resultModels = result.map { coreDataModelType.from($0) as! T }
-        taskCompletionSource.set(result: resultModels)
-      } catch {
-        // TODO - generate proper error
-        let error = NSError()
+      } catch let error {
         taskCompletionSource.set(error: error)
       }
     }
