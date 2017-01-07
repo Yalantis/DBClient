@@ -133,7 +133,7 @@ extension CoreDataDBClient: DBClient {
       fetchRequest.fetchOffset = request.fetchOffset
       do {
         let result = try context.fetch(fetchRequest) as! [NSManagedObject]
-        let resultModels = result.map { coreDataModelType.from($0) as! T }
+        let resultModels = result.flatMap { coreDataModelType.from($0) as? T }
         taskCompletionSource.set(result: resultModels)
       } catch let error {
         taskCompletionSource.set(error: error)

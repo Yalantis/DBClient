@@ -11,19 +11,24 @@ Pod::Spec.new do |s|
   s.homepage = 'https://yalantis.com/'
 
   s.ios.deployment_target = "9.0"
-  s.source_files = ['Source/Core/*.swift']
-  s.dependency "Bolts-Swift", "~> 1.3.0"
-  s.frameworks = ['Foundation']
 
-  s.default_subspec = "CoreData"
+  s.default_subspec = "Core"
   
-  s.subspec "CoreData" do  |spec|
-    spec.source_files = ['Source/CoreData/*.swift']
+  s.subspec "Core" do |spec|
+	spec.source_files = ['DBClient/Core/*.swift']
+  	spec.dependency "Bolts-Swift", "~> 1.3.0"
+  	spec.frameworks = ['Foundation']  	
+  end
+
+  s.subspec "CoreData" do |spec|
+  	spec.dependency "DBClient/Core"
+    spec.source_files = ['DBClient/CoreData/*.swift']
     spec.frameworks = ['CoreData']
   end
 
   s.subspec "Realm" do  |spec|
-    spec.source_files = ['Source/Realm/*.swift']
+  	spec.dependency "DBClient/Core"
+    spec.source_files = ['DBClient/Realm/*.swift']
     spec.dependency "RealmSwift", "~> 2.1.1"
   end
 

@@ -13,7 +13,7 @@ import RealmSwift
 /**
   Describes protocol to be implemented by model for `RealmDBClient`
 */
-protocol RealmModelConvertible: Stored {
+public protocol RealmModelConvertible: Stored {
 
   /**
     Returns type of object for model
@@ -89,7 +89,31 @@ extension RealmDBClient: DBClient {
   }
   
   public func execute<T: Stored>(_ request: FetchRequest<T>) -> Task<[T]> {
-    return Task.cancelledTask()
+    guard let modelType = T.self as? RealmModelConvertible.Type else {
+        fatalError("RealmDBClient can manage only types which conform to RealmModelConvertible")
+    }
+    if let predicate = request.predicate {
+      print("RealmDBClient doesn't support `predicate` property of FetchRequest")
+    }
+    let taskCompletionSource = TaskCompletionSource<[T]>()
+    let neededType = modelType.realmClass()
+    do {
+      var objects = realm
+        .objects(neededType)
+        .get(offset: request.fetchOffset, limit: request.fetchLimit)
+      if let descriptor = request.sortDescriptor {
+        let order: ComparisonResult = descriptor.ascending ? .orderedAscending : .orderedDescending
+        objects = objects.sorted(by: { (lhs, rhs) -> Bool in
+          return descriptor.compare(lhs, to: rhs) == order
+        })
+      }
+      let mappedObjects = objects.flatMap { modelType.from($0) as? T }
+      taskCompletionSource.set(result: mappedObjects)
+    } catch let error {
+        taskCompletionSource.set(error: error)
+    }
+
+    return taskCompletionSource.task
   }
   
   public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T>{
@@ -97,4 +121,30 @@ extension RealmDBClient: DBClient {
     return RequestObservable(request: request)
   }
 
+}
+
+extension Results {
+
+  func get<T: Object>(offset: Int, limit: Int) -> [T] {
+    var lim = 0
+    var off = 0
+    var l: [T] = []
+    let count = self.count
+
+    if off <= offset && offset < count - 1 {
+      off = offset
+    }
+    if limit > count || limit == 0 {
+      lim = count
+    } else {
+      lim = limit
+    }
+
+    for i in off..<lim {
+      let dog = self[i] as! T
+      l.append(dog)
+    }
+
+    return l
+  }
 }
