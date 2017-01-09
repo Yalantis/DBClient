@@ -92,9 +92,6 @@ extension RealmDBClient: DBClient {
     guard let modelType = T.self as? RealmModelConvertible.Type else {
         fatalError("RealmDBClient can manage only types which conform to RealmModelConvertible")
     }
-    if let predicate = request.predicate {
-      print("RealmDBClient doesn't support `predicate` property of FetchRequest")
-    }
     let taskCompletionSource = TaskCompletionSource<[T]>()
     let neededType = modelType.realmClass()
     do {
@@ -106,6 +103,9 @@ extension RealmDBClient: DBClient {
         objects = objects.sorted(by: { (lhs, rhs) -> Bool in
           return descriptor.compare(lhs, to: rhs) == order
         })
+      }
+      if let predicate = request.predicate {
+        objects = objects.filter { predicate.evaluate(with: $0) }
       }
       let mappedObjects = objects.flatMap { modelType.from($0) as? T }
       taskCompletionSource.set(result: mappedObjects)
