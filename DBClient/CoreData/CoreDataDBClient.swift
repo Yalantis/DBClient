@@ -86,7 +86,7 @@ public class CoreDataDBClient {
 
       dict[NSUnderlyingErrorKey] = error as NSError
       let wrappedError = NSError(domain: "com.Yalantis.DBClient", code: 9999, userInfo: dict)
-      NSLog("Unresolved error \(wrappedError), \(wrappedError.userInfo)")
+      print("Unresolved error \(wrappedError), \(wrappedError.userInfo)")
       abort()
     }
 
@@ -105,6 +105,7 @@ public class CoreDataDBClient {
     context.parent = managedObjectContext
     context.perform {
       closure(context)
+      try? self.managedObjectContext.save()
     }
   }
 
