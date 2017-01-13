@@ -66,7 +66,7 @@ class CoreDataObservable<T: Stored, U: NSManagedObject>: RequestObservable<T> {
       closure(.initial(mapped))
       observer = closure
       
-      fetchedResultsControllerDelegate.observer = { change in
+      fetchedResultsControllerDelegate.observer = { [unowned self] change in
         if case .update(deletions: let deletions, insertions: let insertions, modifications: let modifications) = change {
           let mappedInsertions = insertions.map { ($0, coreDataModelType.from($1) as! T) }
           let mappedModifications = modifications.map { ($0, coreDataModelType.from($1) as! T) }
@@ -94,11 +94,11 @@ private class FetchedResultsControllerDelegate<T: NSManagedObject>: NSObject, NS
     
     switch type {
     case .delete:
-      batchChanges.append(.delete(indexPath![0], object))
+      batchChanges.append(.delete(indexPath!.row, object))
     case .insert:
-      batchChanges.append(.insert(newIndexPath![0], object))
+      batchChanges.append(.insert(newIndexPath!.row, object))
     case .update:
-      batchChanges.append(.update(indexPath![0], object))
+      batchChanges.append(.update(indexPath!.row, object))
     default: break
     }
   }
