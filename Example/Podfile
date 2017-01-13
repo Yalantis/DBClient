@@ -1,0 +1,9 @@
+platform :ios, '9.0'
+use_frameworks!
+
+target 'Example' do
+
+    pod 'DBClient/Realm', :path => '../'
+    pod 'DBClient/CoreData', :path => '../'
+
+end
