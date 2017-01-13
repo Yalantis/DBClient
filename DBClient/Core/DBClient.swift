@@ -76,6 +76,13 @@ public protocol DBClient {
 }
 
 public extension DBClient {
+    
+  /// Fetch all entities from database
+  ///
+  /// - Returns: Task with array of objects
+  func fetchAll<T: Stored>() -> Task<[T]> {
+    return execute(FetchRequest())
+  }
 
   /**
     Finds first element with given value as primary.
