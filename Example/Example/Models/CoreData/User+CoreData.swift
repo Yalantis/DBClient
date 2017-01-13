@@ -35,6 +35,7 @@ extension User: CoreDataModelConvertible {
         }
         user.id = id
         user.name = name
+        
         return user
     }
 
@@ -49,5 +50,4 @@ extension User: CoreDataModelConvertible {
 
         return User(id: id, name: name)
     }
-
 }

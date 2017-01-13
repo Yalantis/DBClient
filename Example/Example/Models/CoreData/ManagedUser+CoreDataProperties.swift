@@ -11,11 +11,11 @@ import CoreData
 
 extension ManagedUser {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<ManagedUser> {
+    @nonobjc class func fetchRequest() -> NSFetchRequest<ManagedUser> {
         return NSFetchRequest<ManagedUser>(entityName: User.entityName)
     }
 
-    @NSManaged public var id: String?
-    @NSManaged public var name: String?
+    @NSManaged var id: String?
+    @NSManaged var name: String?
     
 }

@@ -15,7 +15,7 @@ class ObjectUser: Object {
         return "id"
     }
 
-    var id: String = ""
-    var name: String = ""
+    dynamic var id: String = ""
+    dynamic var name: String = ""
 
 }

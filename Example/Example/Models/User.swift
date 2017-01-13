@@ -23,6 +23,18 @@ class User {
 
 extension User: Stored {
 
-    public static var primaryKey: String? { return "id" }
+    public static var primaryKey: String? {
+        return "id"
+    }
 
+}
+
+extension User {
+    
+    static func createRandom() -> User {
+        let id = arc4random()
+        let user = User(id: "\(id)", name: "User #\(id)")
+        
+        return user
+    }
 }
