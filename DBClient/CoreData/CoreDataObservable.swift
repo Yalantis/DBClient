@@ -30,6 +30,9 @@ class CoreDataObservable<T: Stored, U: NSManagedObject>: RequestObservable<T> {
       }
       if let sortDescriptor = request.sortDescriptor {
         fetchRequest.sortDescriptors = [sortDescriptor]
+      } else {
+        let defaultSortDescriptor = NSSortDescriptor(key: coreDataModelType.primaryKey, ascending: true)
+        fetchRequest.sortDescriptors = [defaultSortDescriptor]
       }
       fetchRequest.fetchLimit = request.fetchLimit
       fetchRequest.fetchOffset = request.fetchOffset
