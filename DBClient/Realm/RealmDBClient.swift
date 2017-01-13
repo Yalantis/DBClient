@@ -117,8 +117,7 @@ extension RealmDBClient: DBClient {
   }
   
   public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T>{
-//    return RealmObservable(request: request, realm: realm)
-    return RequestObservable(request: request)
+    return RealmObservable(request: request, realm: realm)
   }
 
 }
@@ -147,4 +146,5 @@ extension Results {
 
     return l
   }
+  
 }

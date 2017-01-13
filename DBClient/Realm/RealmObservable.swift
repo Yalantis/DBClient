@@ -11,7 +11,7 @@ import RealmSwift
 
 extension Object: Stored {}
 
-public class RealmObservable<T: Object>: RequestObservable<T> {
+public class RealmObservable<T: Stored>: RequestObservable<T> {
   
   internal let realm: Realm
   internal var notificationToken: NotificationToken?
@@ -24,7 +24,11 @@ public class RealmObservable<T: Object>: RequestObservable<T> {
   open override func observe(_ closure: @escaping (ObservableChange<T>) -> Void) {
     precondition(notificationToken == nil, "Observable can be observed only once")
     
-    var realmObjects = realm.objects(T.self)
+    guard let realmModelType = T.self as? RealmModelConvertible.Type else  {
+      fatalError("RealmDBClient can manage only types which conform to RealmModelConvertible")
+    }
+    
+    var realmObjects = realm.objects(realmModelType.realmClass())
     if let predicate = request.predicate {
       realmObjects = realmObjects.filter(predicate)
     }
@@ -32,29 +36,26 @@ public class RealmObservable<T: Object>: RequestObservable<T> {
       realmObjects = realmObjects.sorted(byProperty: key, ascending: sortDescriptor.ascending)
     }
     
-    notificationToken = realmObjects.addNotificationBlock { [unowned self] changes in
-      closure(self.map(changes))
+    notificationToken = realmObjects.addNotificationBlock { changes in
+      switch changes {
+      case .initial(let initial):
+        let mapped = initial.map { realmModelType.from($0) as! T }
+        closure(.initial(Array(mapped)))
+      
+      case .update(let objects, let deletions, let insertions, let modifications):
+        let mappedObjects = objects.map { realmModelType.from($0) as! T }
+        let insertions = insertions.map { (index: $0, element: mappedObjects[$0]) }
+        let modifications = modifications.map { (index: $0, element: mappedObjects[$0]) }
+        closure(.update(deletions: deletions, insertions: insertions, modifications: modifications))
+        
+      case .error(let error):
+        closure(.error(error))
+      }
     }
   }
   
   public func stopObserving() {
     notificationToken = nil
-  }
-  
-  fileprivate func map(_ realmChange: RealmCollectionChange<Results<T>>) -> ObservableChange<T> {
-    switch realmChange {
-    case .initial(let initial):
-      return .initial(Array(initial))
-      
-    case .update(let objects, let deletions, let insertions, let modifications):
-      let deletions = deletions.map { $0 }
-      let insertions = insertions.map { (index: $0, element: objects[$0]) }
-      let modifications = modifications.map { (index: $0, element: objects[$0]) }
-      return .update(deletions: deletions, insertions: insertions, modifications: modifications)
-      
-    case .error(let error):
-      return .error(error)
-    }
   }
   
 }
