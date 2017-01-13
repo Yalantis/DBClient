@@ -105,6 +105,7 @@ public class CoreDataDBClient {
     context.parent = managedObjectContext
     context.perform {
       closure(context)
+      try? self.managedObjectContext.save()
     }
   }
 
