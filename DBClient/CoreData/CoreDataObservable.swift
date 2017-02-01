@@ -67,11 +67,11 @@ class CoreDataObservable<T: Stored, U: NSManagedObject>: RequestObservable<T> {
       observer = closure
       
       fetchedResultsControllerDelegate.observer = { [unowned self] change in
-        if case .update(deletions: let deletions, insertions: let insertions, modifications: let modifications) = change {
+        if case .change(objects: let objects, deletions: let deletions, insertions: let insertions, modifications: let modifications) = change {
           let mappedInsertions = insertions.map { ($0, coreDataModelType.from($1) as! T) }
           let mappedModifications = modifications.map { ($0, coreDataModelType.from($1) as! T) }
-          
-          self.observer?(.update(deletions: deletions, insertions: mappedInsertions, modifications: mappedModifications))
+          let mappedObjects = objects.map { coreDataModelType.from($0) as! T }
+            self.observer?(.change(objects: mappedObjects, deletions: deletions, insertions: mappedInsertions, modifications: mappedModifications))
         }
       }
       
@@ -112,7 +112,7 @@ private class FetchedResultsControllerDelegate<T: NSManagedObject>: NSObject, NS
     let inserted = batchChanges.filter { $0.isInsertion }.map { (index: $0.index(), element: $0.object()) }
     let updated = batchChanges.filter { $0.isUpdate }.map { (index: $0.index(), element: $0.object()) }
     
-    observer?(.update(deletions: deleted, insertions: inserted, modifications: updated))
+    observer?(.change(objects: controller.fetchedObjects as? [T] ?? [], deletions: deleted, insertions: inserted, modifications: updated))
     batchChanges = []
   }
   

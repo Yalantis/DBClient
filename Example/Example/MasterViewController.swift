@@ -26,22 +26,18 @@ class MasterViewController: UITableViewController, DBClientInjectable {
                 self.objects.append(contentsOf: initial)
                 self.tableView.reloadData()
                 
-            case .update(deletions: let deletions, insertions: let insertions, modifications: let modifications):
+            case .change(objects: let objects, deletions: let deletions, insertions: let insertions, modifications: let modifications):
+                self.objects = objects
                 self.tableView.beginUpdates()
 
                 let insertedIndexPaths = insertions.map { IndexPath(row: $0.index, section: 0) }
-                insertions.forEach { index, object in self.objects.insert(object, at: index) }
                 self.tableView.insertRows(at: insertedIndexPaths, with: .automatic)
                 
                 let deletedIndexPaths = deletions.map { IndexPath(row: $0, section: 0) }
-                deletions.forEach { self.objects.remove(at: $0) }
                 self.tableView.deleteRows(at: deletedIndexPaths, with: .automatic)
                 
                 let updatedIndexPaths = modifications.map { IndexPath(row: $0.index, section: 0) }
                 self.tableView.reloadRows(at: updatedIndexPaths, with: .automatic)
-                modifications.forEach { index, object in
-                    self.objects.insert(object, at: index)
-                }
                 
                 self.tableView.endUpdates()
                 

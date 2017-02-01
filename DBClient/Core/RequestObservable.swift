@@ -16,7 +16,7 @@ import Foundation
 public enum ObservableChange<T: Stored> {
   
   case initial([T])
-  case update(deletions: [Int], insertions: [(index: Int, element: T)], modifications: [(index: Int, element: T)])
+  case change(objects: [T], deletions: [Int], insertions: [(index: Int, element: T)], modifications: [(index: Int, element: T)])
   case error(Error)
   
 }
