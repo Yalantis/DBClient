@@ -42,11 +42,11 @@ public class RealmObservable<T: Stored>: RequestObservable<T> {
         let mapped = initial.map { realmModelType.from($0) as! T }
         closure(.initial(Array(mapped)))
       
-      case .update(let objects, let deletions, let insertions, let modifications):
+      case .change(let objects, let deletions, let insertions, let modifications):
         let mappedObjects = objects.map { realmModelType.from($0) as! T }
         let insertions = insertions.map { (index: $0, element: mappedObjects[$0]) }
         let modifications = modifications.map { (index: $0, element: mappedObjects[$0]) }
-        closure(.update(deletions: deletions, insertions: insertions, modifications: modifications))
+        closure(.change(objects: mappedObjects, deletions: deletions, insertions: insertions, modifications: modifications))
         
       case .error(let error):
         closure(.error(error))
