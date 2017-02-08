@@ -13,6 +13,7 @@ import Foundation
 /// - write: For write transactions.
 /// - read: For read transactions.
 public enum DatabaseError: Error {
-  
-  case write, read
+    
+    case write, read
+    
 }
