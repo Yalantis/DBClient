@@ -15,8 +15,15 @@ import Foundation
 /// - error: an error occurred during fetch.
 public enum ObservableChange<T: Stored> {
     
+    public typealias ModelChange = (
+        objects: [T],
+        deletions: [Int],
+        insertions: [(index: Int, element: T)],
+        modifications: [(index: Int, element: T)]
+    )
+    
     case initial([T])
-    case change(objects: [T], deletions: [Int], insertions: [(index: Int, element: T)], modifications: [(index: Int, element: T)])
+    case change(ModelChange)
     case error(Error)
     
 }

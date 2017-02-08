@@ -116,7 +116,7 @@ extension RealmDBClient: DBClient {
         return taskCompletionSource.task
     }
     
-    public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T>{
+    public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
         return RealmObservable(request: request, realm: realm)
     }
     

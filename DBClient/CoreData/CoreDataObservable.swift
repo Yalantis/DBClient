@@ -67,11 +67,17 @@ class CoreDataObservable<T: Stored, U: NSManagedObject>: RequestObservable<T> {
             observer = closure
             
             fetchedResultsControllerDelegate.observer = { [unowned self] change in
-                if case .change(objects: let objects, deletions: let deletions, insertions: let insertions, modifications: let modifications) = change {
-                    let mappedInsertions = insertions.map { ($0, coreDataModelType.from($1) as! T) }
-                    let mappedModifications = modifications.map { ($0, coreDataModelType.from($1) as! T) }
-                    let mappedObjects = objects.map { coreDataModelType.from($0) as! T }
-                    self.observer?(.change(objects: mappedObjects, deletions: deletions, insertions: mappedInsertions, modifications: mappedModifications))
+                if case .change(let change) = change {
+                    let mappedInsertions = change.insertions.map { ($0, coreDataModelType.from($1) as! T) }
+                    let mappedModifications = change.modifications.map { ($0, coreDataModelType.from($1) as! T) }
+                    let mappedObjects = change.objects.map { coreDataModelType.from($0) as! T }
+                    let mappedChange: ObservableChange.ModelChange = (
+                        objects: mappedObjects,
+                        deletions: change.deletions,
+                        insertions: mappedInsertions,
+                        modifications: mappedModifications
+                    )
+                    self.observer?(.change(mappedChange))
                 }
             }
             
@@ -111,8 +117,13 @@ private class FetchedResultsControllerDelegate<T: NSManagedObject>: NSObject, NS
         let deleted = batchChanges.filter { $0.isDeletion }.map { $0.index() }
         let inserted = batchChanges.filter { $0.isInsertion }.map { (index: $0.index(), element: $0.object()) }
         let updated = batchChanges.filter { $0.isUpdate }.map { (index: $0.index(), element: $0.object()) }
-        
-        observer?(.change(objects: controller.fetchedObjects as? [T] ?? [], deletions: deleted, insertions: inserted, modifications: updated))
+        let mappedChange: ObservableChange.ModelChange = (
+            objects: controller.fetchedObjects as? [T] ?? [],
+            deletions: deleted,
+            insertions: inserted,
+            modifications: updated
+        )
+        observer?(.change(mappedChange))
         batchChanges = []
     }
     
