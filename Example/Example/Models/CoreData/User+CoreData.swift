@@ -25,13 +25,16 @@ extension User: CoreDataModelConvertible {
         fetchRequest.predicate = NSPredicate(format: "id = %@", id)
         let result = try? context.fetch(fetchRequest)
         let user: ManagedUser
+        
         if let result = result?.first { // fetch existing
             user = result
         } else { // or create new
-            user = NSEntityDescription.insertNewObject(
-                forEntityName: User.entityName,
-                into: context
-                ) as! ManagedUser
+            let managedObject = NSEntityDescription.insertNewObject(forEntityName: User.entityName, into: context)
+            guard let managedUser = managedObject as? ManagedUser else {
+                    fatalError("Can't create `ManagedUser` object with `\(User.entityName)` entity name")
+            }
+            
+            user = managedUser
         }
         user.id = id
         user.name = name
@@ -50,4 +53,5 @@ extension User: CoreDataModelConvertible {
 
         return User(id: id, name: name)
     }
+    
 }
