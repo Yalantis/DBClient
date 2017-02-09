@@ -10,12 +10,20 @@
 
 extension User: Comparable {
 
-    public static func <(lhs: Self, rhs: Self) -> Bool
+    public static func <(lhs: User, rhs: User) -> Bool {
+        return lhs.id < rhs.id
+    }
     
-    public static func <=(lhs: Self, rhs: Self) -> Bool
+    public static func <=(lhs: User, rhs: User) -> Bool {
+        return lhs.id <= rhs.id
+    }
     
-    public static func >=(lhs: Self, rhs: Self) -> Bool
+    public static func >=(lhs: User, rhs: User) -> Bool {
+        return lhs.id >= rhs.id
+    }
     
-    public static func >(lhs: Self, rhs: Self) -> Bool
+    public static func >(lhs: User, rhs: User) -> Bool {
+        return rhs.id > rhs.id
+    }
 
 }
