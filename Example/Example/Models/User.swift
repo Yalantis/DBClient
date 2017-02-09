@@ -11,7 +11,7 @@ import DBClient
 
 class User {
 
-    let name: String
+    var name: String
     let id: String
 
     init(id: String, name: String) {

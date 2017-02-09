@@ -14,6 +14,7 @@ class DBClientTest: XCTestCase {
         return 25
     }
     
+    // execute given closure asynchronously with expectation
     func execute(_ closure: @escaping (XCTestExpectation) -> ()) {
         let exp = expectation(description: "DBClientTestExpectation")
         DispatchQueue.global(qos: .background).async {

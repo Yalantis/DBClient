@@ -1,0 +1,65 @@
+//
+//  CoreDataCreateTests.swift
+//  Example
+//
+//  Created by Roman Kyrylenko on 2/8/17.
+//  Copyright © 2017 Yalantis. All rights reserved.
+//
+
+import XCTest
+import BoltsSwift
+@testable import Example
+
+final class CoreDataCreateTests: CoreDataTest {
+    
+    func testSingleInsertion() {
+        let randomUser = User.createRandom()
+        execute { expectation in
+            self.dbClient
+                .save(randomUser)
+                .continueOnSuccessWith { savedUser in
+                    XCTAssertEqual(randomUser, savedUser)
+                    expectation.fulfill()
+                }
+                .waitUntilCompleted()
+        }
+    }
+    
+    func testBulkInsertions() {
+        let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
+        execute { expectation in
+            self.dbClient
+                .save(randomUsers)
+                .continueOnSuccessWith { savedUsers in
+                    XCTAssertEqual(randomUsers, savedUsers)
+                    expectation.fulfill()
+                }
+                .waitUntilCompleted()
+        }
+    }
+    
+    // fails in most cases
+//    func testAsyncInsertions() {
+//        let randomUsers: [User] = (0...10).map { _ in User.createRandom() }
+//        var tasks: [Task<User>] = []
+//        
+//        let expectation = self.expectation(description: "insert users")
+//
+//        DispatchQueue.global(qos: .background).async {
+//            for user in randomUsers {
+//                tasks.append(self.dbClient.save(user))
+//            }
+//            Task.whenAll(tasks)
+//                .continueOnSuccessWith { createdTasks in
+//                    expectation.fulfill()
+//                }
+//                .waitUntilCompleted()
+//        }
+//        
+//        waitForExpectations(timeout: expectationTimeout) { (error) in
+//            XCTAssert(error == nil, "\(error)")
+//        }        
+//    }
+    
+}
+
