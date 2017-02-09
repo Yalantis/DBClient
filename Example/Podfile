@@ -7,3 +7,10 @@ target 'Example' do
     pod 'DBClient/CoreData', :path => '../'
 
 end
+
+target 'DBClientTests' do
+
+    pod 'DBClient/Realm', :path => '../'
+    pod 'DBClient/CoreData', :path => '../'	
+
+end
