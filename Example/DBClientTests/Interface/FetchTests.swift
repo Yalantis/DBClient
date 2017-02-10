@@ -1,5 +1,5 @@
 //
-//  CoreDataFetchTests.swift
+//  FetchTests.swift
 //  Example
 //
 //  Created by Roman Kyrylenko on 2/8/17.
@@ -11,7 +11,7 @@ import BoltsSwift
 import XCTest
 @testable import Example
 
-class CoreDataFetchTests: CoreDataTest {
+class FetchTests: DBClientTest {
     
     func testSingleFetch() {
         let user = User.createRandom()
@@ -38,7 +38,7 @@ class CoreDataFetchTests: CoreDataTest {
     func testBulkFetch() {
         let randomUsers: [User] = (0...10)
             .map { _ in User.createRandom() }
-            .sorted { $0.0.id.compare($0.1.id) == .orderedAscending }
+            .sorted()
         
         // save generated users to database
         execute { expectation in
@@ -55,7 +55,7 @@ class CoreDataFetchTests: CoreDataTest {
             request
                 .continueOnSuccessWith { fetchedUsers in
                     // use sort to match users order
-                    XCTAssert(randomUsers == fetchedUsers.sorted { $0.0.id.compare($0.1.id) == .orderedAscending })
+                    XCTAssert(randomUsers == fetchedUsers.sorted())
                     expectation.fulfill()
                 }
                 .waitUntilCompleted()
@@ -63,7 +63,7 @@ class CoreDataFetchTests: CoreDataTest {
     }
     
     func testAsyncFetches() {
-        let randomUsers: [User] = (0...10).map { _ in User.createRandom() }
+        let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
         let userIds: [String] = randomUsers.map { $0.id }
         var tasks: [Task<User?>] = []
         // save users to db

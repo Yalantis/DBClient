@@ -1,5 +1,5 @@
 //
-//  CoreDataDeleteTests.swift
+//  DeleteTests.swift
 //  Example
 //
 //  Created by Roman Kyrylenko on 2/9/17.
@@ -10,7 +10,7 @@ import XCTest
 import BoltsSwift
 @testable import Example
 
-final class CoreDataDeleteTests: CoreDataTest {
+final class DeleteTests: DBClientTest {
     
     func testSingleDeletion() {
         let randomUser = User.createRandom()
@@ -76,6 +76,37 @@ final class CoreDataDeleteTests: CoreDataTest {
                     expectation.fulfill()
                 }
                 .waitUntilCompleted()
+        }
+    }
+    
+    func testAsyncDeletions() {
+        let randomUsers: [User] = (0...10).map { _ in User.createRandom() }
+        
+        execute { expectation in
+            self.dbClient
+                .save(randomUsers)
+                .continueOnSuccessWith { _ in
+                    expectation.fulfill()
+                }
+                .waitUntilCompleted()
+        }
+        
+        var tasks: [Task<User>] = []
+        let expectation = self.expectation(description: "delete users")
+        
+        DispatchQueue.global(qos: .background).async {
+            for user in randomUsers {
+                tasks.append(self.dbClient.delete(user))
+            }
+            Task.whenAll(tasks)
+                .continueOnSuccessWith { createdTasks in
+                    expectation.fulfill()
+                }
+                .waitUntilCompleted()
+        }
+        
+        waitForExpectations(timeout: expectationTimeout) { (error) in
+            XCTAssert(error == nil, "\(error)")
         }
     }
     

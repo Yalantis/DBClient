@@ -6,9 +6,9 @@
 //  Copyright © 2017 Yalantis. All rights reserved.
 //
 
-import Foundation
 @testable import Example
 
+// allows us to use `XCAssertEqual` on `User` objects
 extension User: Equatable {
     
     public static func ==(lhs: User, rhs: User) -> Bool {

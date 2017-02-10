@@ -12,7 +12,7 @@ import DBClient
 class User {
 
     var name: String
-    let id: String
+    var id: String
 
     init(id: String, name: String) {
         self.id = id

@@ -1,5 +1,5 @@
 //
-//  CoreDataCreateTests.swift
+//  CreateTests.swift
 //  Example
 //
 //  Created by Roman Kyrylenko on 2/8/17.
@@ -10,7 +10,7 @@ import XCTest
 import BoltsSwift
 @testable import Example
 
-final class CoreDataCreateTests: CoreDataTest {
+final class CreateTests: DBClientTest {
     
     func testSingleInsertion() {
         let randomUser = User.createRandom()
@@ -38,28 +38,28 @@ final class CoreDataCreateTests: CoreDataTest {
         }
     }
     
-    // fails in most cases
-//    func testAsyncInsertions() {
-//        let randomUsers: [User] = (0...10).map { _ in User.createRandom() }
-//        var tasks: [Task<User>] = []
-//        
-//        let expectation = self.expectation(description: "insert users")
-//
-//        DispatchQueue.global(qos: .background).async {
-//            for user in randomUsers {
-//                tasks.append(self.dbClient.save(user))
-//            }
-//            Task.whenAll(tasks)
-//                .continueOnSuccessWith { createdTasks in
-//                    expectation.fulfill()
-//                }
-//                .waitUntilCompleted()
-//        }
-//        
-//        waitForExpectations(timeout: expectationTimeout) { (error) in
-//            XCTAssert(error == nil, "\(error)")
-//        }        
-//    }
+    func testAsyncInsertions() {
+        // fails with different errors if too much users generated
+        let randomUsers: [User] = (0...10).map { _ in User.createRandom() }
+        var tasks: [Task<User>] = []
+        
+        let expectation = self.expectation(description: "insert users")
+
+        DispatchQueue.global(qos: .background).async {
+            for user in randomUsers {
+                tasks.append(self.dbClient.save(user))
+            }
+            Task.whenAll(tasks)
+                .continueOnSuccessWith { createdTasks in
+                    expectation.fulfill()
+                }
+                .waitUntilCompleted()
+        }
+        
+        waitForExpectations(timeout: expectationTimeout) { (error) in
+            XCTAssert(error == nil, "\(error)")
+        }        
+    }
     
 }
 
