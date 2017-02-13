@@ -14,16 +14,7 @@ import XCTest
 class FetchTests: DBClientTest {
     
     func testSingleFetch() {
-        let user = User.createRandom()
-        // save user to database
-        execute { expectation in
-            self.dbClient
-                .insert(user)
-                .continueOnSuccessWith { _ in
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
+        let user = createRandomUser()
         // check if it has been successfully saved
         execute { expectation in
             self.dbClient
@@ -36,9 +27,7 @@ class FetchTests: DBClientTest {
     }
     
     func testBulkFetch() {
-        let randomUsers: [User] = (0...10)
-            .map { _ in User.createRandom() }
-            .sorted()
+        let randomUsers: [User] = createRandomUsers(10).sorted()
         
         // save generated users to database
         execute { expectation in
@@ -63,18 +52,10 @@ class FetchTests: DBClientTest {
     }
     
     func testAsyncFetches() {
-        let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
+        let randomUsers: [User] = createRandomUsers(100)
         let userIds: [String] = randomUsers.map { $0.id }
         var tasks: [Task<User?>] = []
-        // save users to db
-        execute { expectation in
-            self.dbClient
-                .insert(randomUsers)
-                .continueOnSuccessWith { _ in
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
+        
         // async fetch them
         execute { expectation in
             for userId in userIds {

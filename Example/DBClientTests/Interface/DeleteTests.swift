@@ -13,17 +13,7 @@ import BoltsSwift
 final class DeleteTests: DBClientTest {
     
     func testSingleDeletion() {
-        let randomUser = User.createRandom()
-        // save user to db
-        execute { expectation in
-            self.dbClient
-                .insert(randomUser)
-                .continueOnSuccessWith { savedUser in
-                    XCTAssertEqual(randomUser, savedUser)
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
+        let randomUser = createRandomUser()
         // remove user from db
         execute { expectation in
             self.dbClient
@@ -46,19 +36,8 @@ final class DeleteTests: DBClientTest {
     }
     
     func testBulkDeletions() {
-        let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
-        
-        // save user to db
-        execute { expectation in
-            self.dbClient
-                .insert(randomUsers)
-                .continueOnSuccessWith { savedUsers in
-                    XCTAssertEqual(randomUsers, savedUsers)
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
-        // remove user from db
+        let randomUsers: [User] = createRandomUsers(100)
+        // remove users from db
         execute { expectation in
             self.dbClient
                 .delete(randomUsers)
@@ -80,16 +59,7 @@ final class DeleteTests: DBClientTest {
     }
     
     func testAsyncDeletions() {
-        let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
-        
-        execute { expectation in
-            self.dbClient
-                .insert(randomUsers)
-                .continueOnSuccessWith { _ in
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
+        let randomUsers: [User] = createRandomUsers(100)
         
         var tasks: [Task<Void>] = []
         let expectation = self.expectation(description: "delete users")

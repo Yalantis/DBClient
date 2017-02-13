@@ -118,6 +118,17 @@ public extension DBClient {
     }
     
     /**
+     Saves object to database.
+     
+     - Parameter object: object to be saved
+     
+     - Returns: `Task` with saved object or appropriate error in case of failure.
+     */
+    @discardableResult func insert<T: Stored>(_ object: T) -> Task<T> {
+        return convertArrayTaskToSingleObject(insert([object]))
+    }
+    
+    /**
      Updates changed performed with object to database.
      
      - Parameter object: object to be updated
@@ -137,17 +148,6 @@ public extension DBClient {
      */
     @discardableResult func delete<T: Stored>(_ object: T) -> Task<Void> {
         return delete([object])
-    }
-    
-    /**
-     Saves object to database.
-     
-     - Parameter object: object to be saved
-     
-     - Returns: `Task` with saved object or appropriate error in case of failure.
-     */
-    @discardableResult func insert<T: Stored>(_ object: T) -> Task<T> {
-        return convertArrayTaskToSingleObject(insert([object]))
     }
     
     private func convertArrayTaskToSingleObject<T>(_ task: Task<[T]>) -> Task<T> {

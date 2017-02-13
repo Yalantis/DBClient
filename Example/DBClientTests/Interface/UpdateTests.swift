@@ -13,19 +13,9 @@ import BoltsSwift
 final class UpdateTests: DBClientTest {
     
     func testSingleUpdate() {
-        let randomUser = User.createRandom()
+        let randomUser = createRandomUser()
         let userId = randomUser.id
         let userName = "named \(randomUser.name)"
-        // save user to db
-        execute { expectation in
-            self.dbClient
-                .insert(randomUser)
-                .continueOnSuccessWith { savedUser in
-                    XCTAssertEqual(randomUser, savedUser)
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
         // update user's name
         execute { expectation in
             self.dbClient
@@ -53,19 +43,9 @@ final class UpdateTests: DBClientTest {
     }
     
     func testPrimaryValueUpdate() {
-        let randomUser = User.createRandom()
+        let randomUser = createRandomUser()
         let userId = randomUser.id
         let newUserId = "n\(userId)"
-        // save user to db
-        execute { expectation in
-            self.dbClient
-                .insert(randomUser)
-                .continueOnSuccessWith { savedUser in
-                    XCTAssertEqual(randomUser, savedUser)
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
         // update user's id
         execute { expectation in
             self.dbClient
@@ -104,18 +84,8 @@ final class UpdateTests: DBClientTest {
     
     func testBulkUpdates() {
         // sort users by id to be sure that each arrays contains the same user at the same index
-        let randomUsers: [User] = (0...10).map { _ in User.createRandom() }.sorted()
+        let randomUsers: [User] = createRandomUsers(100).sorted()
         let userNames: [String] = randomUsers.map { "awesome \($0.name)" }
-        
-        // save users
-        execute { expectation in
-            self.dbClient
-                .insert(randomUsers)
-                .continueOnSuccessWith { _ in
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
         
         // fetch and update them
         execute { expectation in

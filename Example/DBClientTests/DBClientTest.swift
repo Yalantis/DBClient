@@ -87,5 +87,32 @@ class DBClientTest: XCTestCase {
         }
     }
     
+    @discardableResult func createRandomUser() -> User {
+        let randomUser = User.createRandom()
+        execute { expectation in
+            self.dbClient
+                .insert(randomUser)
+                .continueOnSuccessWith { _ in
+                    expectation.fulfill()
+                }
+                .waitUntilCompleted()
+        }
+        
+        return randomUser
+    }
+    
+    @discardableResult func createRandomUsers(_ count: Int) -> [User] {
+        let randomUsers = (0..<count).map { _ in User.createRandom() }
+        execute { expectation in
+            self.dbClient
+                .insert(randomUsers)
+                .continueOnSuccessWith { _ in
+                    expectation.fulfill()
+                }
+                .waitUntilCompleted()
+        }
+        
+        return randomUsers
+    }
     
 }
