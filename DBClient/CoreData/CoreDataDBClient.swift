@@ -9,38 +9,43 @@
 import CoreData
 import BoltsSwift
 
+public enum ConverterMode {
+  case insertNewIgnoreExisted, updateExistedIgnoreNew, updateExistedInsertNew
+}
+
 /**
-  Describes type of model for CoreData database client.
-  Model should conform to CoreDataModelConvertible protocol
-  for ability to be fetched/saved/updated/deleted in CoreData
-*/
+ Describes type of model for CoreData database client.
+ Model should conform to CoreDataModelConvertible protocol
+ for ability to be fetched/saved/updated/deleted in CoreData
+ */
 public protocol CoreDataModelConvertible: Stored {
 
   /**
-    Returns type of object for model.
-  */
+   Returns type of object for model.
+   */
   static func managedObjectClass() -> NSManagedObject.Type
 
   /**
-    Executes mapping from `NSManagedObject` instance.
-    
-    - Parameter managedObject: Object to be mapped from
-     
-    - Returns: Mapped object.
-  */
+   Executes mapping from `NSManagedObject` instance.
+
+   - Parameter managedObject: Object to be mapped from
+
+   - Returns: Mapped object.
+   */
   static func from(_ managedObject: NSManagedObject) -> Stored
 
   /**
-    Executes backward mapping to `NSManagedObject` from given context
-     
-    - Parameter context: Context, where object should be created.
-     
-    - Returns: Created instance
-  */
-  func toManagedObject(in context: NSManagedObjectContext) -> NSManagedObject
+   Executes backward mapping to `NSManagedObject` from given context
+
+   - Parameter context: Context, where object should be created.
+
+   - Returns: Created instance
+   */
+  func upsertManagedObject(in context: NSManagedObjectContext, existedInstance: NSManagedObject?) -> NSManagedObject
+
 
   static var entityName: String { get }
-  
+
 }
 
 extension NSManagedObject: Stored {}
@@ -48,9 +53,9 @@ extension NSManagedObject: Stored {}
 // TODO: If it is possible, need some way to avoid calling DBClient functions with objects
 // which don't conform to CoreDataModelConvertible protocol - generate compile time error
 
-/** 
-  Implementation of database client for CoreData storage type.
-*/
+/**
+ Implementation of database client for CoreData storage type.
+ */
 public class CoreDataDBClient {
 
   private var modelName: String
@@ -112,20 +117,20 @@ public class CoreDataDBClient {
   fileprivate func fetchRequest(for entity: CoreDataModelConvertible.Type) -> NSFetchRequest<NSFetchRequestResult> {
     return NSFetchRequest(entityName: entity.entityName)
   }
-  
+
 }
 
 // MARK: - DBClient methods
 
 extension CoreDataDBClient: DBClient {
-  
+
   public func execute<T: Stored>(_ request: FetchRequest<T>) -> Task<[T]> {
     guard let coreDataModelType = T.self as? CoreDataModelConvertible.Type else {
       fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
     }
-    
+
     let taskCompletionSource = TaskCompletionSource<[T]>()
-    
+
     performBackgroundTask { context in
       let fetchRequest = self.fetchRequest(for: coreDataModelType)
       fetchRequest.predicate = request.predicate
@@ -147,58 +152,53 @@ extension CoreDataDBClient: DBClient {
   public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
     return CoreDataObservable(request: request, context: managedObjectContext)
   }
-  
-  public func save<T: Stored>(_ objects: [T]) -> Task<[T]> {
-    // For each element in collection:
-    // 1. Cast T object to CoreDataModelConvertible if it is possible
-    // 2. Convert CoreDataModelConvertible object to CoreData object in given context
-    // After all inserts/updates try to save context
-    
+
+  /// Insert given objects into context and save it
+  ///
+  /// If appropriate object already exists in DB it will be ignored and nothing will be inserted
+  public func insert<T: Stored>(_ objects: [T]) -> Task<[T]> {
     let taskCompletionSource = TaskCompletionSource<[T]>()
     performBackgroundTask { context in
-      for object in objects {
-        if let coreDataConvertibleObject = object as? CoreDataModelConvertible {
-          let _ = coreDataConvertibleObject.toManagedObject(in: context)
+      var insertedObjects = [T]()
+      objects.forEach { object in
+        if self.find(objects: [object], in: context)?.first != nil {
+          return
         }
+
+        let convertedObject = self.convert(objects: [object])[0]
+        let managedObject = convertedObject.upsertManagedObject(in: context, existedInstance: nil)
+        insertedObjects.append(object)
       }
+
       do {
         try context.save()
-        taskCompletionSource.set(result: objects)
+        taskCompletionSource.set(result: insertedObjects)
       } catch let error {
         taskCompletionSource.set(error: error)
       }
     }
     return taskCompletionSource.task
   }
-  
+
+  /// Method to update existed in DB objects
+  /// if there is no such object in db nothing will happened
   public func update<T: Stored>(_ objects: [T]) -> Task<[T]> {
-    // For each element in collection:
-    // 1. Cast T object to CoreDataModelConvertible if it is possible
-    // 2. Convert CoreDataModelConvertible object to CoreData object in given context
-    // After all inserts/updates try to save context
-
-    // The same logic as for Save actions
-    return save(objects)
-  }
-  
-  public func delete<T: Stored>(_ objects: [T]) -> Task<[T]> {
-    // For each element in collection:
-    // 1. Cast T object to CoreDataModelConvertible if it is possible
-    // 2. Convert CoreDataModelConvertible object to CoreData object in given context
-    // 3. Delete CoreData object from context
-    // After all deletes try to save context
-
     let taskCompletionSource = TaskCompletionSource<[T]>()
     performBackgroundTask { context in
+      var updatedObjects = [T]()
+
       for object in objects {
-        if let coreDataConvertibleObject = object as? CoreDataModelConvertible {
-          let coreDataObject = coreDataConvertibleObject.toManagedObject(in: context)
-          context.delete(coreDataObject)
+        guard let storedObject = self.find(objects: [object], in: context)?.first else {
+          continue
         }
+        let convertedObject = self.convert(objects: [object])[0]
+        convertedObject.upsertManagedObject(in: context, existedInstance: storedObject)
+        updatedObjects.append(object)
       }
+
       do {
         try context.save()
-        taskCompletionSource.set(result: objects)
+        taskCompletionSource.set(result: updatedObjects)
       } catch let error {
         taskCompletionSource.set(error: error)
       }
@@ -206,4 +206,83 @@ extension CoreDataDBClient: DBClient {
     return taskCompletionSource.task
   }
 
+  /// Update object if it exists or insert new one otherwise
+  ///
+  /// - Returns: Created instance
+  public func upsert<T: Stored>(_ objects: [T]) -> Task<(updated: [T], inserted: [T])> {
+    let taskCompletionSource = TaskCompletionSource<(updated: [T], inserted: [T])>()
+    performBackgroundTask { context in
+      var updatedObjects = [T]()
+      var insertedObjects = [T]()
+
+      for object in objects {
+        let storedObject: NSManagedObject? = self.find(objects: [object], in: context)?.first
+        let convertedObject = self.convert(objects: [object])[0]
+        convertedObject.upsertManagedObject(in: context, existedInstance: storedObject)
+        if storedObject == nil {
+          insertedObjects.append(object)
+        } else {
+          updatedObjects.append(object)
+        }
+      }
+
+      do {
+        try context.save()
+        taskCompletionSource.set(result: (updated: updatedObjects, inserted: insertedObjects))
+      } catch let error {
+        taskCompletionSource.set(error: error)
+      }
+    }
+    return taskCompletionSource.task
+  }
+
+  /// For each element in collection:
+  /// After all deletes try to save context
+  public func delete<T: Stored>(_ objects: [T]) -> Task<Void> {
+    let taskCompletionSource = TaskCompletionSource<Void>()
+    performBackgroundTask { context in
+      guard let foundObjects = self.find(objects: objects, in: context) else {
+        taskCompletionSource.set(result: ())
+        return
+      }
+      foundObjects.forEach { context.delete($0) }
+
+      do {
+        try context.save()
+        taskCompletionSource.set(result: ())
+      } catch let error {
+        taskCompletionSource.set(error: error)
+      }
+    }
+    return taskCompletionSource.task
+  }
+
+}
+
+private extension CoreDataDBClient {
+
+  func find<T: Stored>(objects: [T], in context: NSManagedObjectContext) -> [NSManagedObject]? {
+    guard let coreDataModelType = T.self as? CoreDataModelConvertible.Type else {
+      fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
+    }
+
+    let ids = objects.flatMap { $0.valueOfPrimaryKey }
+    let fetchRequest = self.fetchRequest(for: coreDataModelType)
+    fetchRequest.predicate = NSPredicate(format: "\(T.primaryKeyName!) IN %@", ids)
+    guard let result = try? context.fetch(fetchRequest) as? [NSManagedObject] else {
+      return nil
+    }
+
+    return result
+  }
+
+  func convert<T: Stored>(objects: [T]) -> [CoreDataModelConvertible] {
+    return objects.map { object in
+      guard let coreDataConvertibleObject = object as? CoreDataModelConvertible else {
+        fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
+      }
+      return coreDataConvertibleObject
+    }
+  }
+  
 }

@@ -52,7 +52,7 @@ public class RealmDBClient {
 
 extension RealmDBClient: DBClient {
   
-  public func save<T: Stored>(_ objects: [T]) -> Task<[T]> {
+  public func insert<T: Stored>(_ objects: [T]) -> Task<[T]> {
     let taskCompletionSource = TaskCompletionSource<[T]>()
     
     let realmObjects = objects.flatMap { $0 as? RealmModelConvertible }.map { $0.toRealmObject() }
@@ -69,17 +69,17 @@ extension RealmDBClient: DBClient {
   }
   
   public func update<T: Stored>(_ objects: [T]) -> Task<[T]> {
-    return save(objects)
+    return insert(objects)
   }
   
-  public func delete<T: Stored>(_ objects: [T]) -> Task<[T]> {
-    let taskCompletionSource = TaskCompletionSource<[T]>()
+  public func delete<T: Stored>(_ objects: [T]) -> Task<Void> {
+    let taskCompletionSource = TaskCompletionSource<Void>()
     
     do {
       let realmObjects = objects.flatMap { $0 as? RealmModelConvertible }.map { $0.toRealmObject() }
       try realm.write {
         realm.delete(realmObjects)
-        taskCompletionSource.set(result: objects)
+        taskCompletionSource.set(result: ())
       }
     } catch let error {
       taskCompletionSource.set(error: error)
