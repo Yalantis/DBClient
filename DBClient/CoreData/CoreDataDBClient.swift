@@ -59,21 +59,6 @@ public class CoreDataDBClient {
     public init(forModel modelName: String = "CoreData", in bundle: Bundle = Bundle.main) {
         self.modelName = modelName
         self.bundle = bundle
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(saveRootContext),
-            name: .UIApplicationWillTerminate,
-            object: nil
-        )
-    }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
-    
-    @objc private func saveRootContext() {
-        try? rootContext.save()
     }
     
     // MARK: - CoreData stack
@@ -137,11 +122,14 @@ public class CoreDataDBClient {
         return fetchContext
     }()
     
-    fileprivate func performWriteTask(_ closure: @escaping (NSManagedObjectContext) -> ()) {
+    fileprivate func performWriteTask(_ closure: @escaping (NSManagedObjectContext, (() throws -> ())) -> ()) {
         let context = writeManagedContext
         context.perform {
-            closure(context)
-            try? self.mainContext.save()
+            closure(context) {
+                try context.save()
+                try self.mainContext.save()
+                try self.rootContext.save()
+            }
         }
     }
     
@@ -177,7 +165,7 @@ extension CoreDataDBClient: DBClient {
             fetchRequest.fetchOffset = request.fetchOffset
             do {
                 let result = try context.fetch(fetchRequest) as! [NSManagedObject]
-                let resultModels = result.flatMap { coreDataModelType.from($0) as? T }
+                let resultModels = result.flatMap { coreDataModelType.from($0) as! T }
                 taskCompletionSource.set(result: resultModels)
             } catch let error {
                 taskCompletionSource.set(error: error)
@@ -205,14 +193,14 @@ extension CoreDataDBClient: DBClient {
         // After all inserts/updates try to save context
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
-        performWriteTask { context in
+        performWriteTask { context, savingClosure in
             for object in objects {
                 if let coreDataConvertibleObject = object as? CoreDataModelConvertible {
                     let _ = coreDataConvertibleObject.toManagedObject(in: context)
                 }
             }
             do {
-                try context.save()
+                try savingClosure()
                 taskCompletionSource.set(result: objects)
             } catch let error {
                 taskCompletionSource.set(error: error)
@@ -246,7 +234,7 @@ extension CoreDataDBClient: DBClient {
         // After all deletes try to save context
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
-        performWriteTask { context in
+        performWriteTask { context, savingClosure in
             for object in objects {
                 if let coreDataConvertibleObject = object as? CoreDataModelConvertible {
                     let coreDataObject = coreDataConvertibleObject.toManagedObject(in: context)
@@ -254,7 +242,7 @@ extension CoreDataDBClient: DBClient {
                 }
             }
             do {
-                try context.save()
+                try savingClosure()
                 taskCompletionSource.set(result: objects)
             } catch let error {
                 taskCompletionSource.set(error: error)
