@@ -39,8 +39,7 @@ final class CreateTests: DBClientTest {
     }
     
     func testAsyncInsertions() {
-        // fails with different errors if too much users generated
-        let randomUsers: [User] = (0...10).map { _ in User.createRandom() }
+        let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
         var tasks: [Task<User>] = []
         
         let expectation = self.expectation(description: "insert users")

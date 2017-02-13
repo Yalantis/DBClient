@@ -80,7 +80,7 @@ final class DeleteTests: DBClientTest {
     }
     
     func testAsyncDeletions() {
-        let randomUsers: [User] = (0...10).map { _ in User.createRandom() }
+        let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
         
         execute { expectation in
             self.dbClient

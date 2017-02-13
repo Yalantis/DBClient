@@ -188,10 +188,17 @@ extension CoreDataDBClient: DBClient {
     }
     
     public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
+        guard T.self is CoreDataModelConvertible.Type else {
+            fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
+        }
+
         return CoreDataObservable(request: request, context: mainContext)
     }
     
     public func save<T: Stored>(_ objects: [T]) -> Task<[T]> {
+        guard T.self is CoreDataModelConvertible.Type else {
+            fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
+        }
         // For each element in collection:
         // 1. Cast T object to CoreDataModelConvertible if it is possible
         // 2. Convert CoreDataModelConvertible object to CoreData object in given context
@@ -216,6 +223,9 @@ extension CoreDataDBClient: DBClient {
     }
     
     public func update<T: Stored>(_ objects: [T]) -> Task<[T]> {
+        guard T.self is CoreDataModelConvertible.Type else {
+            fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
+        }
         // For each element in collection:
         // 1. Cast T object to CoreDataModelConvertible if it is possible
         // 2. Convert CoreDataModelConvertible object to CoreData object in given context
@@ -226,6 +236,9 @@ extension CoreDataDBClient: DBClient {
     }
     
     public func delete<T: Stored>(_ objects: [T]) -> Task<[T]> {
+        guard T.self is CoreDataModelConvertible.Type else {
+            fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
+        }
         // For each element in collection:
         // 1. Cast T object to CoreDataModelConvertible if it is possible
         // 2. Convert CoreDataModelConvertible object to CoreData object in given context
