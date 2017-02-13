@@ -17,6 +17,7 @@
 		B8477EA01E4DC0EA00608B78 /* UpdateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8477E991E4DC0EA00608B78 /* UpdateTests.swift */; };
 		B8477EA11E4DC0EA00608B78 /* User+Comparable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8477E9A1E4DC0EA00608B78 /* User+Comparable.swift */; };
 		B8477EA21E4DC0EA00608B78 /* User+Equtable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8477E9B1E4DC0EA00608B78 /* User+Equtable.swift */; };
+		B88711421E5211AF00189D40 /* ObservableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88711411E5211AF00189D40 /* ObservableTests.swift */; };
 		C533725A1E26155D004ECBCF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C53372591E26155D004ECBCF /* AppDelegate.swift */; };
 		C533725C1E26155D004ECBCF /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C533725B1E26155D004ECBCF /* MasterViewController.swift */; };
 		C533725E1E26155D004ECBCF /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C533725D1E26155D004ECBCF /* DetailViewController.swift */; };
@@ -59,6 +60,7 @@
 		B8477E991E4DC0EA00608B78 /* UpdateTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UpdateTests.swift; sourceTree = "<group>"; };
 		B8477E9A1E4DC0EA00608B78 /* User+Comparable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "User+Comparable.swift"; sourceTree = "<group>"; };
 		B8477E9B1E4DC0EA00608B78 /* User+Equtable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "User+Equtable.swift"; sourceTree = "<group>"; };
+		B88711411E5211AF00189D40 /* ObservableTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObservableTests.swift; sourceTree = "<group>"; };
 		C53372561E26155D004ECBCF /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C53372591E26155D004ECBCF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C533725B1E26155D004ECBCF /* MasterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
@@ -137,6 +139,7 @@
 				B8477E961E4DC0EA00608B78 /* DeleteTests.swift */,
 				B8477E971E4DC0EA00608B78 /* ExecuteTests.swift */,
 				B8477E981E4DC0EA00608B78 /* FetchTests.swift */,
+				B88711411E5211AF00189D40 /* ObservableTests.swift */,
 				B8477E991E4DC0EA00608B78 /* UpdateTests.swift */,
 			);
 			path = Interface;
@@ -414,6 +417,7 @@
 				B8477E9C1E4DC0EA00608B78 /* CreateTests.swift in Sources */,
 				B8477EA01E4DC0EA00608B78 /* UpdateTests.swift in Sources */,
 				B8477EA21E4DC0EA00608B78 /* User+Equtable.swift in Sources */,
+				B88711421E5211AF00189D40 /* ObservableTests.swift in Sources */,
 				B8477EA11E4DC0EA00608B78 /* User+Comparable.swift in Sources */,
 				B8477E9D1E4DC0EA00608B78 /* DeleteTests.swift in Sources */,
 				B8477E9F1E4DC0EA00608B78 /* FetchTests.swift in Sources */,
