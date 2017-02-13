@@ -50,7 +50,7 @@ class MasterViewController: UITableViewController, DBClientInjectable {
     }
     
     @IBAction func addObject(_ sender: Any) {
-        dbClient.save(User.createRandom())
+        dbClient.insert(User.createRandom())
     }
     
     // MARK: - Segues
