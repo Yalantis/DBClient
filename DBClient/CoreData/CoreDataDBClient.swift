@@ -59,6 +59,21 @@ public class CoreDataDBClient {
     public init(forModel modelName: String = "CoreData", in bundle: Bundle = Bundle.main) {
         self.modelName = modelName
         self.bundle = bundle
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(saveRootContext),
+            name: .UIApplicationWillTerminate,
+            object: nil
+        )
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func saveRootContext() {
+        try? rootContext.save()
     }
     
     // MARK: - CoreData stack
@@ -93,19 +108,47 @@ public class CoreDataDBClient {
         return coordinator
     }()
     
-    fileprivate lazy var managedObjectContext: NSManagedObjectContext = {
+    private lazy var rootContext: NSManagedObjectContext = {
         let coordinator = self.persistentStoreCoordinator
-        var managedObjectContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
-        managedObjectContext.persistentStoreCoordinator = coordinator
-        return managedObjectContext
+        let parentContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        parentContext.persistentStoreCoordinator = coordinator
+        
+        return parentContext
     }()
     
-    fileprivate func performBackgroundTask(closure: @escaping (NSManagedObjectContext) -> Void) {
-        let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-        context.parent = managedObjectContext
+    fileprivate lazy var mainContext: NSManagedObjectContext = {
+        let mainContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        mainContext.parent = self.rootContext
+        
+        return mainContext
+    }()
+    
+    private lazy var readManagedContext: NSManagedObjectContext = {
+        let fetchContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        fetchContext.parent = self.mainContext
+        
+        return fetchContext
+    }()
+    
+    private lazy var writeManagedContext: NSManagedObjectContext = {
+        let fetchContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        fetchContext.parent = self.mainContext
+        
+        return fetchContext
+    }()
+    
+    fileprivate func performWriteTask(_ closure: @escaping (NSManagedObjectContext) -> ()) {
+        let context = writeManagedContext
         context.perform {
             closure(context)
-            try? self.managedObjectContext.save()
+            try? self.mainContext.save()
+        }
+    }
+    
+    fileprivate func performReadTask(closure: @escaping (NSManagedObjectContext) -> ()) {
+        let context = readManagedContext
+        context.perform {
+            closure(context)
         }
     }
     
@@ -126,7 +169,7 @@ extension CoreDataDBClient: DBClient {
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
         
-        performBackgroundTask { context in
+        performReadTask { context in
             let fetchRequest = self.fetchRequest(for: coreDataModelType)
             fetchRequest.predicate = request.predicate
             fetchRequest.sortDescriptors = [request.sortDescriptor].flatMap { $0 }
@@ -145,7 +188,7 @@ extension CoreDataDBClient: DBClient {
     }
     
     public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
-        return CoreDataObservable(request: request, context: managedObjectContext)
+        return CoreDataObservable(request: request, context: mainContext)
     }
     
     public func save<T: Stored>(_ objects: [T]) -> Task<[T]> {
@@ -155,7 +198,7 @@ extension CoreDataDBClient: DBClient {
         // After all inserts/updates try to save context
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
-        performBackgroundTask { context in
+        performWriteTask { context in
             for object in objects {
                 if let coreDataConvertibleObject = object as? CoreDataModelConvertible {
                     let _ = coreDataConvertibleObject.toManagedObject(in: context)
@@ -168,6 +211,7 @@ extension CoreDataDBClient: DBClient {
                 taskCompletionSource.set(error: error)
             }
         }
+        
         return taskCompletionSource.task
     }
     
@@ -189,7 +233,7 @@ extension CoreDataDBClient: DBClient {
         // After all deletes try to save context
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
-        performBackgroundTask { context in
+        performWriteTask { context in
             for object in objects {
                 if let coreDataConvertibleObject = object as? CoreDataModelConvertible {
                     let coreDataObject = coreDataConvertibleObject.toManagedObject(in: context)
