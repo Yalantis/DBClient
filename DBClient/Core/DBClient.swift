@@ -57,7 +57,8 @@ public protocol DBClient {
      
     - Returns: `Task` with saved objects or appropriate error in case of failure.
   */
-  @discardableResult func insert<T: Stored>(_ objects: [T]) -> Task<[T]>
+  @discardableResult
+  func insert<T: Stored>(_ objects: [T]) -> Task<[T]>
 
   /**
     Updates changed performed with objects to database.
@@ -66,7 +67,14 @@ public protocol DBClient {
      
     - Returns: `Task` with updated objects or appropriate error in case of failure.
   */
-  @discardableResult func update<T: Stored>(_ objects: [T]) -> Task<[T]>
+  @discardableResult
+  func update<T: Stored>(_ objects: [T]) -> Task<[T]>
+
+  /// Update object if it exists or insert new one otherwise
+  ///
+  /// - Returns: Updated and inserted arrays
+  @discardableResult
+  func upsert<T: Stored>(_ objects: [T]) -> Task<(updated: [T], inserted: [T])>
 
   /**
     Deletes objects from database.
@@ -75,7 +83,8 @@ public protocol DBClient {
      
     - Returns: `Task` with deleted objects or appropriate error in case of failure.
   */
-  @discardableResult func delete<T: Stored>(_ objects: [T]) -> Task<Void>
+  @discardableResult
+  func delete<T: Stored>(_ objects: [T]) -> Task<Void>
 
 }
 
