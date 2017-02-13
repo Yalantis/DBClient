@@ -17,7 +17,7 @@ final class ExecuteTests: DBClientTest {
         let randomUser = User.createRandom()
         execute { expectation in
             self.dbClient
-                .save(randomUser)
+                .insert(randomUser)
                 .continueOnSuccessWith { _ in
                     expectation.fulfill()
                 }
@@ -31,7 +31,7 @@ final class ExecuteTests: DBClientTest {
         let randomUsers = (0..<count).map { _ in User.createRandom() }
         execute { expectation in
             self.dbClient
-                .save(randomUsers)
+                .insert(randomUsers)
                 .continueOnSuccessWith { _ in
                     expectation.fulfill()
                 }

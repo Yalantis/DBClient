@@ -19,7 +19,7 @@ final class UpdateTests: DBClientTest {
         // save user to db
         execute { expectation in
             self.dbClient
-                .save(randomUser)
+                .insert(randomUser)
                 .continueOnSuccessWith { savedUser in
                     XCTAssertEqual(randomUser, savedUser)
                     expectation.fulfill()
@@ -59,7 +59,7 @@ final class UpdateTests: DBClientTest {
         // save user to db
         execute { expectation in
             self.dbClient
-                .save(randomUser)
+                .insert(randomUser)
                 .continueOnSuccessWith { savedUser in
                     XCTAssertEqual(randomUser, savedUser)
                     expectation.fulfill()
@@ -75,7 +75,7 @@ final class UpdateTests: DBClientTest {
                     user?.id = newUserId
                     return self.dbClient.update(user!)
                 }
-                .continueOnSuccessWith { _ in
+                .continueWith { _ in
                     expectation.fulfill()
                 }
                 .waitUntilCompleted()
@@ -85,8 +85,7 @@ final class UpdateTests: DBClientTest {
             self.dbClient
                 .findFirst(User.self, primaryValue: userId)
                 .continueOnSuccessWith { user in
-                    // the user exists because when we try to update user with new primaryId 
-                    // it doesn't exist in db so we create a new one
+                    // old value should exists
                     XCTAssert(user != nil)
                     expectation.fulfill()
             }
@@ -95,7 +94,8 @@ final class UpdateTests: DBClientTest {
             self.dbClient
                 .findFirst(User.self, primaryValue: newUserId)
                 .continueOnSuccessWith { user in
-                    XCTAssert(user != nil)
+                    // new value shouldn't
+                    XCTAssert(user == nil)
                     expectation.fulfill()
             }
         }
@@ -110,7 +110,7 @@ final class UpdateTests: DBClientTest {
         // save users
         execute { expectation in
             self.dbClient
-                .save(randomUsers)
+                .insert(randomUsers)
                 .continueOnSuccessWith { _ in
                     expectation.fulfill()
                 }
@@ -129,7 +129,7 @@ final class UpdateTests: DBClientTest {
                         return user
                     }
                     
-                    return self.dbClient.save(updatedUsers)
+                    return self.dbClient.update(updatedUsers)
                 }
                 .continueOnSuccessWith { _ in
                     expectation.fulfill()

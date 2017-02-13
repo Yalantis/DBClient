@@ -44,7 +44,7 @@ class MasterViewController: UITableViewController, DBClientInjectable {
     // MARK: - Actions
     
     @IBAction private func addObject(_ sender: Any) {
-        dbClient.save(User.createRandom())
+        dbClient.insert(User.createRandom())
     }
     
     private func observeChanges(_ changeSet: ObservableChange<User>) {

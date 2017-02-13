@@ -1,6 +1,6 @@
 //
 //  CoreDataObservable.swift
-//  ArchitectureGuideTemplate
+//  DBClient
 //
 //  Created by Serhii Butenko on 15/12/16.
 //  Copyright © 2016 Yalantis. All rights reserved.
@@ -31,7 +31,7 @@ class CoreDataObservable<T: Stored, U: NSManagedObject>: RequestObservable<T> {
             if let sortDescriptor = request.sortDescriptor {
                 fetchRequest.sortDescriptors = [sortDescriptor]
             } else {
-                let defaultSortDescriptor = NSSortDescriptor(key: coreDataModelType.primaryKey, ascending: true)
+                let defaultSortDescriptor = NSSortDescriptor(key: coreDataModelType.primaryKeyName, ascending: true)
                 fetchRequest.sortDescriptors = [defaultSortDescriptor]
             }
             fetchRequest.fetchLimit = request.fetchLimit
@@ -96,16 +96,22 @@ private class FetchedResultsControllerDelegate<T: NSManagedObject>: NSObject, NS
     private var batchChanges: [CoreDataChange<T>] = []
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        guard let object = anObject as? T else { return }
+        guard let object = anObject as? T else {
+            return
+        }
         
         switch type {
         case .delete:
             batchChanges.append(.delete(indexPath!.row, object))
+            
         case .insert:
             batchChanges.append(.insert(newIndexPath!.row, object))
+            
         case .update:
             batchChanges.append(.update(indexPath!.row, object))
+            
         default: break
+            
         }
     }
     

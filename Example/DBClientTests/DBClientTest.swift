@@ -71,14 +71,16 @@ class DBClientTest: XCTestCase {
     // removes all objects from the database
     func cleanUpDatabase() {
         print("[DBClientTest]: Cleaning database")
+        var count = 0
         let request: Task<[User]> = dbClient.fetchAll()
         execute { (expectation) in
             request
-                .continueOnSuccessWithTask { users -> Task<[User]> in
+                .continueOnSuccessWithTask { users -> Task<Void> in
+                    count = users.count
                     return self.dbClient.delete(users)
                 }
                 .continueOnSuccessWith { objects in
-                    print("[DBClientTest]: Removed \(objects.count) objects")
+                    print("[DBClientTest]: Removed \(count) objects")
                     expectation.fulfill()
                 }
                 .waitUntilCompleted()

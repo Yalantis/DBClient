@@ -18,7 +18,7 @@ class FetchTests: DBClientTest {
         // save user to database
         execute { expectation in
             self.dbClient
-                .save(user)
+                .insert(user)
                 .continueOnSuccessWith { _ in
                     expectation.fulfill()
                 }
@@ -43,7 +43,7 @@ class FetchTests: DBClientTest {
         // save generated users to database
         execute { expectation in
             self.dbClient
-                .save(randomUsers)
+                .insert(randomUsers)
                 .continueOnSuccessWith { _ in
                     expectation.fulfill()
                 }
@@ -69,7 +69,7 @@ class FetchTests: DBClientTest {
         // save users to db
         execute { expectation in
             self.dbClient
-                .save(randomUsers)
+                .insert(randomUsers)
                 .continueOnSuccessWith { _ in
                     expectation.fulfill()
                 }

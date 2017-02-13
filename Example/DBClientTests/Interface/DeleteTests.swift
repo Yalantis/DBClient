@@ -17,7 +17,7 @@ final class DeleteTests: DBClientTest {
         // save user to db
         execute { expectation in
             self.dbClient
-                .save(randomUser)
+                .insert(randomUser)
                 .continueOnSuccessWith { savedUser in
                     XCTAssertEqual(randomUser, savedUser)
                     expectation.fulfill()
@@ -51,7 +51,7 @@ final class DeleteTests: DBClientTest {
         // save user to db
         execute { expectation in
             self.dbClient
-                .save(randomUsers)
+                .insert(randomUsers)
                 .continueOnSuccessWith { savedUsers in
                     XCTAssertEqual(randomUsers, savedUsers)
                     expectation.fulfill()
@@ -84,14 +84,14 @@ final class DeleteTests: DBClientTest {
         
         execute { expectation in
             self.dbClient
-                .save(randomUsers)
+                .insert(randomUsers)
                 .continueOnSuccessWith { _ in
                     expectation.fulfill()
                 }
                 .waitUntilCompleted()
         }
         
-        var tasks: [Task<User>] = []
+        var tasks: [Task<Void>] = []
         let expectation = self.expectation(description: "delete users")
         
         DispatchQueue.global(qos: .background).async {

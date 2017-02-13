@@ -16,7 +16,7 @@ final class CreateTests: DBClientTest {
         let randomUser = User.createRandom()
         execute { expectation in
             self.dbClient
-                .save(randomUser)
+                .insert(randomUser)
                 .continueOnSuccessWith { savedUser in
                     XCTAssertEqual(randomUser, savedUser)
                     expectation.fulfill()
@@ -29,7 +29,7 @@ final class CreateTests: DBClientTest {
         let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
         execute { expectation in
             self.dbClient
-                .save(randomUsers)
+                .insert(randomUsers)
                 .continueOnSuccessWith { savedUsers in
                     XCTAssertEqual(randomUsers, savedUsers)
                     expectation.fulfill()
@@ -46,7 +46,7 @@ final class CreateTests: DBClientTest {
 
         DispatchQueue.global(qos: .background).async {
             for user in randomUsers {
-                tasks.append(self.dbClient.save(user))
+                tasks.append(self.dbClient.insert(user))
             }
             Task.whenAll(tasks)
                 .continueOnSuccessWith { createdTasks in

@@ -1,6 +1,6 @@
 //
 //  CoreDataChange.swift
-//  ArchitectureGuideTemplate
+//  DBClient
 //
 //  Created by Serhii Butenko on 19/12/16.
 //  Copyright © 2016 Yalantis. All rights reserved.

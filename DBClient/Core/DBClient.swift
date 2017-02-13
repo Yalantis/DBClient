@@ -1,6 +1,6 @@
 //
 //  DBClient.swift
-//  ArchitectureGuideTemplate
+//  DBClient
 //
 //  Created by Yury Grinenko on 03.11.16.
 //  Copyright © 2016 Yalantis. All rights reserved.
@@ -15,13 +15,18 @@ import BoltsSwift
 public protocol Stored {
     
     /// Primary key for an object.
-    static var primaryKey: String? { get }
+    static var primaryKeyName: String? { get }
+    
+    /// Primary value for an instance
+    var valueOfPrimaryKey: CVarArg? { get }
     
 }
 
 public extension Stored {
     
-    public static var primaryKey: String? { return nil }
+    static var primaryKeyName: String? { return nil }
+    
+    var valueOfPrimaryKey: CVarArg? { return nil }
     
 }
 
@@ -50,10 +55,9 @@ public protocol DBClient {
      Saves objects to database.
      
      - Parameter objects: list of objects to be saved
-     
      - Returns: `Task` with saved objects or appropriate error in case of failure.
      */
-    @discardableResult func save<T: Stored>(_ objects: [T]) -> Task<[T]>
+    @discardableResult func insert<T: Stored>(_ objects: [T]) -> Task<[T]>
     
     /**
      Updates changed performed with objects to database.
@@ -69,9 +73,9 @@ public protocol DBClient {
      
      - Parameter objects: list of objects to be deleted
      
-     - Returns: `Task` with deleted objects or appropriate error in case of failure.
+     - Returns: `Task` with appropriate error in case of failure.
      */
-    @discardableResult func delete<T: Stored>(_ objects: [T]) -> Task<[T]>
+    @discardableResult func delete<T: Stored>(_ objects: [T]) -> Task<Void>
     
 }
 
@@ -95,12 +99,12 @@ public extension DBClient {
      - Returns: `Task` with found object or nil.
      */
     func findFirst<T: Stored>(_ type: T.Type, primaryValue: String, predicate: NSPredicate? = nil) -> Task<T?> {
-        guard let primaryKey = type.primaryKey else {
+        guard let primaryKey = type.primaryKeyName else {
             return Task(nil)
         }
         
         let primaryKeyPredicate = NSPredicate(format: "\(primaryKey) == %@", primaryValue)
-        var fetchPredicate: NSPredicate
+        let fetchPredicate: NSPredicate
         if let predicate = predicate {
             fetchPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [primaryKeyPredicate, predicate])
         } else {
@@ -109,22 +113,8 @@ public extension DBClient {
         let request = FetchRequest<T>(predicate: fetchPredicate, fetchLimit: 1)
         
         return execute(request).continueWithTask { task -> Task<T?> in
-            if let first = task.result?.first {
-                return Task(first)
-            }
-            return Task(nil)
+            return Task(task.result?.first)
         }
-    }
-    
-    /**
-     Deletes object from database.
-     
-     - Parameter object: object to be deleted
-     
-     - Returns: `Task` with deleted object or appropriate error in case of failure.
-     */
-    @discardableResult func delete<T: Stored>(_ object: T) -> Task<T> {
-        return convertArrayTaskToSingleObject(delete([object]))
     }
     
     /**
@@ -139,14 +129,25 @@ public extension DBClient {
     }
     
     /**
+     Deletes object from database.
+     
+     - Parameter object: object to be deleted
+     
+     - Returns: `Task` with deleted object or appropriate error in case of failure.
+     */
+    @discardableResult func delete<T: Stored>(_ object: T) -> Task<Void> {
+        return delete([object])
+    }
+    
+    /**
      Saves object to database.
      
      - Parameter object: object to be saved
      
      - Returns: `Task` with saved object or appropriate error in case of failure.
      */
-    @discardableResult func save<T: Stored>(_ object: T) -> Task<T> {
-        return convertArrayTaskToSingleObject(save([object]))
+    @discardableResult func insert<T: Stored>(_ object: T) -> Task<T> {
+        return convertArrayTaskToSingleObject(insert([object]))
     }
     
     private func convertArrayTaskToSingleObject<T>(_ task: Task<[T]>) -> Task<T> {
