@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="aL8-tT-7Iy">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="aL8-tT-7Iy">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -57,7 +57,7 @@
             </objects>
             <point key="canvasLocation" x="130" y="380"/>
         </scene>
-        <!--Detail View Controller-->
+        <!--Title-->
         <scene sceneID="LHb-U1-yQj">
             <objects>
                 <viewController id="u8o-oF-wRr" customClass="DetailViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
@@ -69,22 +69,30 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="#detail" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oCb-S2-zBB">
-                                <rect key="frame" x="20" y="323" width="335" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Username" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="nGu-zr-yj5">
+                                <rect key="frame" x="20" y="318" width="335" height="30"/>
                                 <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="oCb-S2-zBB" secondAttribute="trailing" constant="20" id="eWv-DS-YSj"/>
-                            <constraint firstItem="oCb-S2-zBB" firstAttribute="leading" secondItem="aTn-wh-VHj" secondAttribute="leading" constant="20" id="hE0-nm-evf"/>
-                            <constraint firstItem="oCb-S2-zBB" firstAttribute="centerY" secondItem="aTn-wh-VHj" secondAttribute="centerY" id="vRR-OX-Bhe"/>
+                            <constraint firstItem="nGu-zr-yj5" firstAttribute="centerX" secondItem="aTn-wh-VHj" secondAttribute="centerX" id="Dt5-3j-P4k"/>
+                            <constraint firstItem="nGu-zr-yj5" firstAttribute="centerY" secondItem="aTn-wh-VHj" secondAttribute="centerY" id="IsB-AB-JWa"/>
+                            <constraint firstItem="nGu-zr-yj5" firstAttribute="leading" secondItem="aTn-wh-VHj" secondAttribute="leading" constant="20" id="nl7-3o-Cw0"/>
+                            <constraint firstAttribute="trailing" secondItem="nGu-zr-yj5" secondAttribute="trailing" constant="20" id="wc5-8h-dM6"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" title="Title" id="t2J-o6-F2n">
+                        <barButtonItem key="rightBarButtonItem" systemItem="save" id="QXy-OA-Nb9">
+                            <connections>
+                                <action selector="saveButtonAction" destination="u8o-oF-wRr" id="Lgr-q7-hJU"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
-                        <outlet property="detailLabel" destination="oCb-S2-zBB" id="ZQJ-ar-2fT"/>
+                        <outlet property="userNameTextField" destination="nGu-zr-yj5" id="Ydc-PA-cu4"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="g1r-4c-4LZ" userLabel="First Responder" sceneMemberID="firstResponder"/>
