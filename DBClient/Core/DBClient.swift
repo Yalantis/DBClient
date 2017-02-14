@@ -8,10 +8,8 @@
 
 import BoltsSwift
 
-/**
- Protocol for transaction restrictions in `DBClient`.
- Used for transactions of all type.
- */
+/// Protocol for transaction restrictions in `DBClient`.
+/// Used for transactions of all type.
 public protocol Stored {
     
     /// Primary key for an object.
@@ -33,49 +31,45 @@ public extension Stored {
 /// Describes abstract database transactions, common for all engines.
 public protocol DBClient {
     
-    /**
-     Executes given request and returns result wrapped in `Task`.
-     
-     - Parameter request: request to execute.
-     
-     - Returns: task with result or error in appropriate state.
-     */
+    /// Executes given request and returns result wrapped in `Task`.
+    ///
+    /// - Parameter request: request to execute
+    /// - Returns: `Task` with array of objects or error in case of failude.
     func execute<T: Stored>(_ request: FetchRequest<T>) -> Task<[T]>
     
-    /**
-     Creates observable request from given `FetchRequest`.
-     
-     - Parameter request: fetch request to be observed
-     
-     - Returns: observable of for given request.
-     */
+    /// Creates observable request from given `FetchRequest`.
+    ///
+    /// - Parameter request: fetch request to be observed
+    /// - Returns: observable of for given request.
     func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T>
     
-    /**
-     Saves objects to database.
-     
-     - Parameter objects: list of objects to be saved
-     - Returns: `Task` with saved objects or appropriate error in case of failure.
-     */
-    @discardableResult func insert<T: Stored>(_ objects: [T]) -> Task<[T]>
+    /// Inserts objects to database.
+    ///
+    /// - Parameter objects: list of objects to be inserted
+    /// - Returns: `Task` with inserted objects or appropriate error in case of failure.
+    @discardableResult
+    func insert<T: Stored>(_ objects: [T]) -> Task<[T]>
     
-    /**
-     Updates changed performed with objects to database.
-     
-     - Parameter objects: list of objects to be updated
-     
-     - Returns: `Task` with updated objects or appropriate error in case of failure.
-     */
-    @discardableResult func update<T: Stored>(_ objects: [T]) -> Task<[T]>
+    /// Updates changed performed with objects to database.
+    ///
+    /// - Parameter objects: list of objects to be updated
+    /// - Returns: `Task` with updated objects or appropriate error in case of failure.
+    @discardableResult
+    func update<T: Stored>(_ objects: [T]) -> Task<[T]>
     
-    /**
-     Deletes objects from database.
-     
-     - Parameter objects: list of objects to be deleted
-     
-     - Returns: `Task` with appropriate error in case of failure.
-     */
-    @discardableResult func delete<T: Stored>(_ objects: [T]) -> Task<Void>
+    /// Deletes objects from database.
+    ///
+    /// - Parameter objects: list of objects to be deleted
+    /// - Returns: `Task` with appropriate error in case of failure.
+    @discardableResult
+    func delete<T: Stored>(_ objects: [T]) -> Task<Void>
+    
+    /// Iterates through given objects and updates existing in database instances or creates them
+    ///
+    /// - Parameter objects: objects to be worked with
+    /// - Returns: A `Task` with inserted and updated instances
+    @discardableResult
+    func upsert<T : Stored>(_ objects: [T]) -> Task<(updated: [T], inserted: [T])>
     
 }
 
@@ -88,16 +82,14 @@ public extension DBClient {
         return execute(FetchRequest())
     }
     
-    /**
-     Finds first element with given value as primary.
-     If no primary key specified for given type, or object with such value doesn't exist returns nil.
-     
-     - Parameters:
-     - type: Type of object to search for
-     - primaryValue: The value of primary key field to search for
-     
-     - Returns: `Task` with found object or nil.
-     */
+    /// Finds first element with given value as primary.
+    /// If no primary key specified for given type, or object with such value doesn't exist returns nil.
+    ///
+    /// - Parameters:
+    ///   - type: type of object to search for
+    ///   - primaryValue: the value of primary key field to search for
+    ///   - predicate: predicate for request
+    /// - Returns: `Task` with found object or nil.
     func findFirst<T: Stored>(_ type: T.Type, primaryValue: String, predicate: NSPredicate? = nil) -> Task<T?> {
         guard let primaryKey = type.primaryKeyName else {
             return Task(nil)
@@ -117,35 +109,26 @@ public extension DBClient {
         }
     }
     
-    /**
-     Saves object to database.
-     
-     - Parameter object: object to be saved
-     
-     - Returns: `Task` with saved object or appropriate error in case of failure.
-     */
+    /// Inserts object to database.
+    ///
+    /// - Parameter object: object to be inserted
+    /// - Returns: `Task` with inserted object or appropriate error in case of failure.
     @discardableResult func insert<T: Stored>(_ object: T) -> Task<T> {
         return convertArrayTaskToSingleObject(insert([object]))
     }
     
-    /**
-     Updates changed performed with object to database.
-     
-     - Parameter object: object to be updated
-     
-     - Returns: `Task` with updated object or appropriate error in case of failure.
-     */
+    /// Updates changed performed with object to database.
+    ///
+    /// - Parameter object: object to be updated
+    /// - Returns: `Task` with updated object or appropriate error in case of failure.
     @discardableResult func update<T: Stored>(_ object: T) -> Task<T> {
         return convertArrayTaskToSingleObject(update([object]))
     }
     
-    /**
-     Deletes object from database.
-     
-     - Parameter object: object to be deleted
-     
-     - Returns: `Task` with deleted object or appropriate error in case of failure.
-     */
+    /// Deletes object from database.
+    ///
+    /// - Parameter object: object to be deleted
+    /// - Returns: `Task` with appropriate error in case of failure.
     @discardableResult func delete<T: Stored>(_ object: T) -> Task<Void> {
         return delete([object])
     }

@@ -72,6 +72,10 @@ extension RealmDBClient: DBClient {
         return insert(objects)
     }
     
+    public func upsert<T : Stored>(_ objects: [T]) -> Task<(updated: [T], inserted: [T])> {
+        fatalError("Not implemented")
+    }
+    
     public func delete<T: Stored>(_ objects: [T]) -> Task<Void> {
         let taskCompletionSource = TaskCompletionSource<Void>()
         

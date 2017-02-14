@@ -243,8 +243,6 @@ extension CoreDataDBClient: DBClient {
     }
     
     /// Update object if it exists or insert new one otherwise
-    ///
-    /// - Returns: Created instance
     public func upsert<T: Stored>(_ objects: [T]) -> Task<(updated: [T], inserted: [T])> {
         let taskCompletionSource = TaskCompletionSource<(updated: [T], inserted: [T])>()
         performWriteTask { context, savingClosure in
