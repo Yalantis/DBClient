@@ -19,7 +19,7 @@ enum StorageType {
     
 }
 
-let storageType: StorageType = .coreData
+let storageType: StorageType = .realm
 
 class DBClientTest: XCTestCase {
     

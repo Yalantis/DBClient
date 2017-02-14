@@ -10,36 +10,26 @@ import Foundation
 import BoltsSwift
 import RealmSwift
 
-/**
- Describes protocol to be implemented by model for `RealmDBClient`
- */
+/// Describes protocol to be implemented by model for `RealmDBClient`
 public protocol RealmModelConvertible: Stored {
     
-    /**
-     Returns type of object for model
-     */
+    /// - Returns: type of object for model
     static func realmClass() -> Object.Type
     
-    /**
-     Executes mapping from `Realm.Object` instance
-     
-     - Parameter realmObject: Object to be mapped from
-     
-     - Returns: Fulfilled model instance
-     */
+    /// Executes mapping from `Realm.Object` instance
+    ///
+    /// - Parameter realmObject: Object to be mapped from
+    /// - Returns: Fulfilled model instance
     static func from(_ realmObject: Object) -> Stored
     
-    /**
-     Executes backward mapping from `Realm.Object`
-     */
+    /// Executes backward mapping from `Realm.Object`
     func toRealmObject() -> Object
     
 }
 
-/**
- Implementation of database client for Realm storage type.
- Model for this client must conform `RealmModelConverible` protocol or error will be raised.
- */
+
+/// Implementation of database client for Realm storage type.
+/// Model for this client must conform `RealmModelConverible` protocol or error will be raised.
 public class RealmDBClient {
     
     let realm: Realm
@@ -53,6 +43,10 @@ public class RealmDBClient {
 extension RealmDBClient: DBClient {
     
     public func insert<T: Stored>(_ objects: [T]) -> Task<[T]> {
+        guard let modelType = T.self as? RealmModelConvertible.Type else {
+            fatalError("RealmDBClient can manage only types which conform to RealmModelConvertible")
+        }
+        
         let taskCompletionSource = TaskCompletionSource<[T]>()
         
         let realmObjects = objects.flatMap { $0 as? RealmModelConvertible }.map { $0.toRealmObject() }
@@ -69,14 +63,26 @@ extension RealmDBClient: DBClient {
     }
     
     public func update<T: Stored>(_ objects: [T]) -> Task<[T]> {
+        guard let modelType = T.self as? RealmModelConvertible.Type else {
+            fatalError("RealmDBClient can manage only types which conform to RealmModelConvertible")
+        }
+        
         return insert(objects)
     }
     
     public func upsert<T : Stored>(_ objects: [T]) -> Task<(updated: [T], inserted: [T])> {
+        guard let modelType = T.self as? RealmModelConvertible.Type else {
+            fatalError("RealmDBClient can manage only types which conform to RealmModelConvertible")
+        }
+        
         fatalError("Not implemented")
     }
     
     public func delete<T: Stored>(_ objects: [T]) -> Task<Void> {
+        guard let modelType = T.self as? RealmModelConvertible.Type else {
+            fatalError("RealmDBClient can manage only types which conform to RealmModelConvertible")
+        }
+        
         let taskCompletionSource = TaskCompletionSource<Void>()
         
         do {
@@ -96,6 +102,7 @@ extension RealmDBClient: DBClient {
         guard let modelType = T.self as? RealmModelConvertible.Type else {
             fatalError("RealmDBClient can manage only types which conform to RealmModelConvertible")
         }
+        
         let taskCompletionSource = TaskCompletionSource<[T]>()
         let neededType = modelType.realmClass()
         do {
@@ -120,7 +127,11 @@ extension RealmDBClient: DBClient {
         return taskCompletionSource.task
     }
     
-    public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T>{
+    public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
+        guard let modelType = T.self as? RealmModelConvertible.Type else {
+            fatalError("RealmDBClient can manage only types which conform to RealmModelConvertible")
+        }
+        
         return RealmObservable(request: request, realm: realm)
     }
     
