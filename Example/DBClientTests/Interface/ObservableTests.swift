@@ -30,7 +30,7 @@ final class ObservableTests: DBClientTest {
                 XCTAssert(objects.isEmpty)
                 
             case .error(let error):
-                XCTAssert(false, "\(error)")
+                XCTFail("\(error)")
             }
         }
         
@@ -56,7 +56,7 @@ final class ObservableTests: DBClientTest {
                 XCTAssertEqual(objects.count, numberOfUsers)
                 
             case .error(let error):
-                XCTAssert(false, "\(error)")
+                XCTFail("\(error)")
             }
         }
         
@@ -91,7 +91,7 @@ final class ObservableTests: DBClientTest {
                 XCTAssertEqual(objects.count, numberOfUsers)
                 
             case .error(let error):
-                XCTAssert(false, "\(error)")
+                XCTFail("\(error)")
             }
         }
         
@@ -129,7 +129,7 @@ final class ObservableTests: DBClientTest {
                 XCTAssertEqual(objects.count, numberOfMatchedUsers - offset)
                 
             case .error(let error):
-                XCTAssert(false, "\(error)")
+                XCTFail("\(error)")
             }
         }
     }

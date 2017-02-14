@@ -56,12 +56,6 @@ class DBClientTest: XCTestCase {
         }
     }
     
-    override func setUp() {
-        super.setUp()
-        
-        cleanUpDatabase()
-    }
-    
     override func tearDown() {
         super.tearDown()
         

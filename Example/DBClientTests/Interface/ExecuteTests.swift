@@ -38,7 +38,12 @@ final class ExecuteTests: DBClientTest {
         execute { expectation in
             self.dbClient
                 .execute(request)
-                .continueOnSuccessWith { users in
+                .continueWith { task in
+                    guard let users = task.result else {
+                        XCTFail("\(task.error)")
+                        return
+                    }
+                    
                     // check only count of arrays beacause we haven't specified sorting
                     XCTAssertEqual(shiftedUsers.count, users.count)
                     expectation.fulfill()
@@ -121,7 +126,6 @@ final class ExecuteTests: DBClientTest {
                 }
                 .waitUntilCompleted()
         }
-
     }
     
     func testCombinedRequest() {
