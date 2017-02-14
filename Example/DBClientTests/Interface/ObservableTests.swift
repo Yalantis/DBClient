@@ -38,7 +38,38 @@ final class ObservableTests: DBClientTest {
     }
     
     func testUpdationObservations() {
+        let request = FetchRequest<User>()
+        let observable = dbClient.observable(for: request)
         
+        let numberOfUsers = 50
+        createRandomUsers(numberOfUsers)
+        let numberOfUsersToUpdate = 10
+        
+        observable.observe { (change: ObservableChange<User>) in
+            switch change {
+                
+            case .change(let change):
+                XCTAssertEqual(change.objects.count, numberOfUsers)
+                XCTAssertEqual(change.modifications.count, numberOfUsersToUpdate)
+                
+            case .initial(let objects):
+                XCTAssertEqual(objects.count, numberOfUsers)
+                
+            case .error(let error):
+                XCTAssert(false, "\(error)")
+            }
+        }
+        
+        execute { expectation in
+            let request = FetchRequest<User>(fetchLimit: numberOfUsersToUpdate)
+            self.dbClient.execute(request)
+                .continueOnSuccessWithTask { users -> Task<[User]> in
+                    return self.dbClient.update(users)
+                }
+                .continueOnSuccessWith { _ in
+                    expectation.fulfill()
+            }
+        }
     }
     
     func testDeletionObservations() {
@@ -76,10 +107,31 @@ final class ObservableTests: DBClientTest {
         }
     }
     
-    func testCombinedObservations() {
-    }
-    
     func testComplexRequestObservations() {
+        let users = createRandomUsers(100)
+        let offset = 5
+        let suffix = "1"
+        let numberOfMatchedUsers = users.filter { $0.id.hasSuffix(suffix) }.count
+        
+        let request = FetchRequest<User>(
+            predicate: NSPredicate(format: "SELF.id ENDSWITH %@", suffix),
+            fetchOffset: offset
+        )
+        let observable = dbClient.observable(for: request)
+        
+        observable.observe { (change: ObservableChange<User>) in
+            switch change {
+                
+            case .change(let change):
+                XCTAssertEqual(numberOfMatchedUsers - offset, change.objects.count)
+                
+            case .initial(let objects):
+                XCTAssertEqual(objects.count, numberOfMatchedUsers - offset)
+                
+            case .error(let error):
+                XCTAssert(false, "\(error)")
+            }
+        }
     }
     
 }
