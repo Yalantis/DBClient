@@ -41,10 +41,8 @@ final class CreateTests: DBClientTest {
     func testAsyncInsertions() {
         let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
         var tasks: [Task<User>] = []
-        
-        let expectation = self.expectation(description: "insert users")
 
-        DispatchQueue.global(qos: .background).async {
+        execute { expectation in
             for user in randomUsers {
                 tasks.append(self.dbClient.insert(user))
             }
@@ -54,10 +52,6 @@ final class CreateTests: DBClientTest {
                 }
                 .waitUntilCompleted()
         }
-        
-        waitForExpectations(timeout: expectationTimeout) { (error) in
-            XCTAssert(error == nil, "\(error)")
-        }        
     }
     
 }

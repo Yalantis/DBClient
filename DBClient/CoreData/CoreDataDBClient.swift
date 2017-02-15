@@ -159,14 +159,21 @@ public class CoreDataDBClient {
 
 extension CoreDataDBClient: DBClient {
     
+    @discardableResult
+    fileprivate func checkType<T>(_ inputType: T) -> CoreDataModelConvertible.Type {
+        guard let modelType = T.self as? CoreDataModelConvertible.Type else {
+            fatalError("`\(String(describing: CoreDataDBClient.self))` can manage only types which conform to `\(String(describing: CoreDataModelConvertible.self))`")
+        }
+        
+        return modelType
+    }
+    
     public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
         return CoreDataObservable(request: request, context: mainContext)
     }
     
     public func execute<T: Stored>(_ request: FetchRequest<T>) -> Task<[T]> {
-        guard let coreDataModelType = T.self as? CoreDataModelConvertible.Type else {
-            fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
-        }
+        let coreDataModelType = checkType(T)
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
         
@@ -192,6 +199,8 @@ extension CoreDataDBClient: DBClient {
     ///
     /// If appropriate object already exists in DB it will be ignored and nothing will be inserted
     public func insert<T: Stored>(_ objects: [T]) -> Task<[T]> {
+        checkType(T)
+        
         let taskCompletionSource = TaskCompletionSource<[T]>()
         performWriteTask { context, savingClosure in
             var insertedObjects = [T]()
@@ -218,6 +227,8 @@ extension CoreDataDBClient: DBClient {
     /// Method to update existed in DB objects
     /// if there is no such object in db nothing will happened
     public func update<T: Stored>(_ objects: [T]) -> Task<[T]> {
+        checkType(T)
+        
         let taskCompletionSource = TaskCompletionSource<[T]>()
         performWriteTask { context, savingClosure in
             var updatedObjects = [T]()
@@ -244,6 +255,8 @@ extension CoreDataDBClient: DBClient {
     
     /// Update object if it exists or insert new one otherwise
     public func upsert<T: Stored>(_ objects: [T]) -> Task<(updated: [T], inserted: [T])> {
+        checkType(T)
+        
         let taskCompletionSource = TaskCompletionSource<(updated: [T], inserted: [T])>()
         performWriteTask { context, savingClosure in
             var updatedObjects = [T]()
@@ -274,6 +287,8 @@ extension CoreDataDBClient: DBClient {
     /// For each element in collection:
     /// After all deletes try to save context
     public func delete<T: Stored>(_ objects: [T]) -> Task<Void> {
+        checkType(T)
+        
         let taskCompletionSource = TaskCompletionSource<Void>()
         performWriteTask { context, savingClosure in
             guard let foundObjects = self.find(objects: objects, in: context) else {
@@ -299,9 +314,7 @@ extension CoreDataDBClient: DBClient {
 private extension CoreDataDBClient {
     
     func find<T: Stored>(objects: [T], in context: NSManagedObjectContext) -> [NSManagedObject]? {
-        guard let coreDataModelType = T.self as? CoreDataModelConvertible.Type else {
-            fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
-        }
+        let coreDataModelType = checkType(T)
         guard let primaryKeyName = T.primaryKeyName else {
             return nil
         }
@@ -317,13 +330,9 @@ private extension CoreDataDBClient {
     }
     
     func convert<T: Stored>(objects: [T]) -> [CoreDataModelConvertible] {
-        return objects.map { object in
-            guard let coreDataConvertibleObject = object as? CoreDataModelConvertible else {
-                fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
-            }
-            
-            return coreDataConvertibleObject
-        }
+        checkType(T)
+
+        return objects.flatMap { $0 as? CoreDataModelConvertible }
     }
     
 }

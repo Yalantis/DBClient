@@ -62,9 +62,8 @@ final class DeleteTests: DBClientTest {
         let randomUsers: [User] = createRandomUsers(100)
         
         var tasks: [Task<Void>] = []
-        let expectation = self.expectation(description: "delete users")
         
-        DispatchQueue.global(qos: .background).async {
+        execute { expectation in
             for user in randomUsers {
                 tasks.append(self.dbClient.delete(user))
             }
@@ -73,10 +72,6 @@ final class DeleteTests: DBClientTest {
                     expectation.fulfill()
                 }
                 .waitUntilCompleted()
-        }
-        
-        waitForExpectations(timeout: expectationTimeout) { (error) in
-            XCTAssert(error == nil, "\(error)")
         }
     }
     
