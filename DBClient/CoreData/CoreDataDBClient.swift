@@ -161,11 +161,16 @@ extension CoreDataDBClient: DBClient {
     
     @discardableResult
     fileprivate func checkType<T>(_ inputType: T) -> CoreDataModelConvertible.Type {
-        guard let modelType = T.self as? CoreDataModelConvertible.Type else {
-            fatalError("`\(String(describing: CoreDataDBClient.self))` can manage only types which conform to `\(String(describing: CoreDataModelConvertible.self))`")
+        switch inputType {
+        case let type as CoreDataModelConvertible.Type:
+            return type
+
+        default:
+            let model = String(describing: CoreDataDBClient.self)
+            let prot = String(describing: CoreDataModelConvertible.self)
+            let given = String(describing: inputType)
+            fatalError("`\(model)` can manage only types which conform to `\(prot)`. `\(given)` given.")
         }
-        
-        return modelType
     }
     
     public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
@@ -331,7 +336,7 @@ private extension CoreDataDBClient {
     
     func convert<T: Stored>(objects: [T]) -> [CoreDataModelConvertible] {
         checkType(T)
-
+        
         return objects.flatMap { $0 as? CoreDataModelConvertible }
     }
     

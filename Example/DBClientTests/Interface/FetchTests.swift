@@ -1,6 +1,6 @@
 //
 //  FetchTests.swift
-//  Example
+//  DBClient-Example
 //
 //  Created by Roman Kyrylenko on 2/8/17.
 //  Copyright © 2017 Yalantis. All rights reserved.
@@ -29,15 +29,6 @@ class FetchTests: DBClientTest {
     func testBulkFetch() {
         let randomUsers: [User] = createRandomUsers(10).sorted()
         
-        // save generated users to database
-        execute { expectation in
-            self.dbClient
-                .insert(randomUsers)
-                .continueOnSuccessWith { _ in
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
         // check if generated users have been successfully saved
         let request: Task<[User]> = dbClient.fetchAll()
         execute { expectation in

@@ -27,6 +27,13 @@ public protocol RealmModelConvertible: Stored {
     
 }
 
+extension RealmModelConvertible {
+    
+    func realmClassForInstance() -> Object.Type {
+        return Self.realmClass()
+    }
+    
+}
 
 /// Implementation of database client for Realm storage type.
 /// Model for this client must conform to `RealmModelConverible` protocol or error will be raised.
@@ -44,13 +51,19 @@ extension RealmDBClient: DBClient {
     
     @discardableResult
     fileprivate func checkType<T>(_ inputType: T) -> RealmModelConvertible.Type {
-        guard let modelType = T.self as? RealmModelConvertible.Type else {
-            fatalError("`\(String(describing: RealmDBClient.self))` can manage only types which conform to `\(String(describing: RealmModelConvertible.self))`")
+        switch inputType {
+        case let type as RealmModelConvertible.Type:
+            return type
+            
+        default:
+            let model = String(describing: RealmDBClient.self)
+            let prot = String(describing: RealmModelConvertible.self)
+            let given = String(describing: inputType)
+            fatalError("`\(model)` can manage only types which conform to `\(prot)`. `\(given)` given.")
         }
-        
-        return modelType
     }
     
+    /// Executes given request. Fetches all entities and then applies all given restrictions
     public func execute<T: Stored>(_ request: FetchRequest<T>) -> Task<[T]> {
         let modelType = checkType(T.self)
         
@@ -80,6 +93,7 @@ extension RealmDBClient: DBClient {
         return taskCompletionSource.task
     }
     
+    /// Inserts new objects to database. If object with such `primaryKeyValue` already exists Realm'll throw an error
     public func insert<T: Stored>(_ objects: [T]) -> Task<[T]> {
         checkType(T)
         
@@ -98,12 +112,14 @@ extension RealmDBClient: DBClient {
         return taskCompletionSource.task
     }
     
+    /// Updates objects which are already in db.
     public func update<T: Stored>(_ objects: [T]) -> Task<[T]> {
         checkType(T)
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
-        
-        let realmObjects = objects.flatMap { $0 as? RealmModelConvertible }.map { $0.toRealmObject() }
+        let realmObjects = separate(objects: objects)
+            .present
+            .flatMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
         do {
             realm.beginWrite()
             realm.add(realmObjects, update: true)
@@ -116,6 +132,7 @@ extension RealmDBClient: DBClient {
         return taskCompletionSource.task
     }
     
+    /// Removes objects by it `primaryKeyValue`s
     public func delete<T: Stored>(_ objects: [T]) -> Task<Void> {
         let type = checkType(T)
         
@@ -139,13 +156,45 @@ extension RealmDBClient: DBClient {
     public func upsert<T : Stored>(_ objects: [T]) -> Task<(updated: [T], inserted: [T])> {
         checkType(T)
         
-        fatalError("Not implemented")
+        let taskCompletionSource = TaskCompletionSource<(updated: [T], inserted: [T])>()
+        let separatedObjects = separate(objects: objects)
+        let realmObjects = objects.flatMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
+        do {
+            realm.beginWrite()
+            realm.add(realmObjects, update: true)
+            try realm.commitWrite()
+            taskCompletionSource.set(result: (updated: separatedObjects.present, inserted: separatedObjects.new))
+        } catch let error {
+            taskCompletionSource.set(error: error)
+        }
+        
+        return taskCompletionSource.task
     }
     
     public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
         checkType(T)
         
         return RealmObservable(request: request, realm: realm)
+    }
+    
+    private func separate<T: Stored>(objects: [T]) -> (present: [T], new: [T]) {
+        var presentObjects: [T] = []
+        var notPresentObjects: [T] = []
+        objects.forEach { object in
+            guard let convertedObject = object as? RealmModelConvertible,
+                let primaryValue = convertedObject.valueOfPrimaryKey else {
+                    return
+            }
+            
+            let entry = self.realm.object(ofType: convertedObject.realmClassForInstance(), forPrimaryKey: primaryValue)
+            if entry != nil {
+                presentObjects.append(object)
+            } else {
+                notPresentObjects.append(object)
+            }
+        }
+        
+        return (present: presentObjects, new: notPresentObjects)
     }
     
 }

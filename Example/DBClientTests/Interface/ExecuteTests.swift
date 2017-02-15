@@ -1,6 +1,6 @@
 //
 //  ExecuteTests.swift
-//  Example
+//  DBClient-Example
 //
 //  Created by Roman Kyrylenko on 2/9/17.
 //  Copyright © 2017 Yalantis. All rights reserved.
@@ -21,7 +21,7 @@ final class ExecuteTests: DBClientTest {
             self.dbClient
                 .execute(request)
                 .continueOnSuccessWith { users in
-                    XCTAssert(users.count == 1)
+                    XCTAssertEqual(users.count, 1)
                     XCTAssertEqual(user, users.first!)
                     expectation.fulfill()
                 }

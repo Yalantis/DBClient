@@ -25,27 +25,11 @@ extension User: RealmModelConvertible {
     }
 
     func toRealmObject() -> Object {
-//      let realm = try! Realm()
-//      
-//      let object: Object
-//      if let existingUser = realm.object(ofType: User.realmClass(), forPrimaryKey: id) {
-//        object = existingUser
-//      } else {
-//        let user = ObjectUser()
-//        user.id = id
-//        user.name = name
-//        object = user
-//      }
-//        
         let user = ObjectUser()
         user.id = id
         user.name = name
-        return user
-//        object = user
-      
-      
         
-//        return object
+        return user
     }
 
 }
