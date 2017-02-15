@@ -50,9 +50,6 @@ public protocol CoreDataModelConvertible: Stored {
 
 extension NSManagedObject: Stored {}
 
-// TODO: If it is possible, need some way to avoid calling DBClient functions with objects
-// which don't conform to CoreDataModelConvertible protocol - generate compile time error
-
 /**
  Implementation of database client for CoreData storage type.
  */
