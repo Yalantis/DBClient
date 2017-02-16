@@ -47,21 +47,9 @@ public class RealmDBClient {
     
 }
 
+// MARK: DBClient
+
 extension RealmDBClient: DBClient {
-    
-    @discardableResult
-    fileprivate func checkType<T>(_ inputType: T) -> RealmModelConvertible.Type {
-        switch inputType {
-        case let type as RealmModelConvertible.Type:
-            return type
-            
-        default:
-            let model = String(describing: RealmDBClient.self)
-            let prot = String(describing: RealmModelConvertible.self)
-            let given = String(describing: inputType)
-            fatalError("`\(model)` can manage only types which conform to `\(prot)`. `\(given)` given.")
-        }
-    }
     
     /// Executes given request. Fetches all entities and then applies all given restrictions
     public func execute<T: Stored>(_ request: FetchRequest<T>) -> Task<[T]> {
@@ -177,7 +165,25 @@ extension RealmDBClient: DBClient {
         return RealmObservable(request: request, realm: realm)
     }
     
-    private func separate<T: Stored>(objects: [T]) -> (present: [T], new: [T]) {
+}
+
+private extension RealmDBClient {
+    
+    @discardableResult
+    func checkType<T>(_ inputType: T) -> RealmModelConvertible.Type {
+        switch inputType {
+        case let type as RealmModelConvertible.Type:
+            return type
+            
+        default:
+            let model = String(describing: RealmDBClient.self)
+            let prot = String(describing: RealmModelConvertible.self)
+            let given = String(describing: inputType)
+            fatalError("`\(model)` can manage only types which conform to `\(prot)`. `\(given)` given.")
+        }
+    }
+    
+    func separate<T: Stored>(objects: [T]) -> (present: [T], new: [T]) {
         var presentObjects: [T] = []
         var notPresentObjects: [T] = []
         objects.forEach { object in

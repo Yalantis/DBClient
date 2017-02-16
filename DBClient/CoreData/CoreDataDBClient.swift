@@ -9,91 +9,110 @@
 import CoreData
 import BoltsSwift
 
-public enum ConverterMode {
-    case insertNewIgnoreExisted, updateExistedIgnoreNew, updateExistedInsertNew
-}
-
-/**
- Describes type of model for CoreData database client.
- Model should conform to CoreDataModelConvertible protocol
- for ability to be fetched/saved/updated/deleted in CoreData
- */
+/// Describes type of model for CoreData database client.
+/// Model should conform to CoreDataModelConvertible protocol
+/// for ability to be fetched/saved/updated/deleted in CoreData
 public protocol CoreDataModelConvertible: Stored {
     
-    /**
-     Returns type of object for model.
-     */
+    /// Returns type of object for model.
     static func managedObjectClass() -> NSManagedObject.Type
     
-    /**
-     Executes mapping from `NSManagedObject` instance.
-     
-     - Parameter managedObject: Object to be mapped from
-     
-     - Returns: Mapped object.
-     */
+    /// Executes mapping from `NSManagedObject` instance.
+    ///
+    /// - Parameter managedObject: object to be mapped from.
+    /// - Returns: mapped object.
     static func from(_ managedObject: NSManagedObject) -> Stored
     
-    /**
-     Executes backward mapping to `NSManagedObject` from given context
-     
-     - Parameter context: Context, where object should be created.
-     
-     - Returns: Created instance
-     */
+    /// Executes backward mapping to `NSManagedObject` from given context
+    ///
+    /// - Parameters:
+    ///   - context: context, where object should be created;
+    ///   - existedInstance: if instance was already created it will be passed.
+    /// - Returns: created instance.
     func upsertManagedObject(in context: NSManagedObjectContext, existedInstance: NSManagedObject?) -> NSManagedObject
     
-    
+    /// The name of the entity from ".xcdatamodeld"
     static var entityName: String { get }
     
 }
 
 extension NSManagedObject: Stored {}
 
-/**
- Implementation of database client for CoreData storage type.
- */
+public enum MigrationType {
+    
+    // provide persistent store constructor with appropriate options
+    case lightweight
+    // in case of failure old model file will be removed
+    case removeOnFailure
+    
+}
+
+/// Implementation of database client for CoreData storage type.
 public class CoreDataDBClient {
     
-    private var modelName: String
-    private var bundle: Bundle
+    private let modelName: String
+    private let bundle: Bundle
+    private let migrationType: MigrationType
     
-    public init(forModel modelName: String = "CoreData", in bundle: Bundle = Bundle.main) {
+    /// Constructor for client
+    ///
+    /// - Parameters:
+    ///   - modelName: the name of the model; default is "CoreData"
+    ///   - bundle: the bundle which contains the model; default is main
+    ///   - migrationType: migration type (in case it needed) for model; default is `MigrationType.lightweight`
+    public init(forModel modelName: String = "CoreData", in bundle: Bundle = Bundle.main, migrationType: MigrationType = .lightweight) {
         self.modelName = modelName
         self.bundle = bundle
+        self.migrationType = migrationType
     }
     
     // MARK: - CoreData stack
     
-    fileprivate lazy var applicationDocumentsDirectory: URL = {
+    private lazy var applicationDocumentsDirectory: URL = {
         let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        
         return urls[urls.count - 1]
     }()
     
-    fileprivate lazy var managedObjectModel: NSManagedObjectModel = {
+    private lazy var managedObjectModel: NSManagedObjectModel = {
         guard let modelURL = self.bundle.url(forResource: self.modelName, withExtension: "momd"),
             let objectModel = NSManagedObjectModel(contentsOf: modelURL) else {
-                fatalError("Can't find managedObjectModel")
+                fatalError("Can't find managedObjectModel named \(self.modelName) in \(self.bundle)")
         }
         
         return objectModel
     }()
     
-    fileprivate lazy var persistentStoreCoordinator: NSPersistentStoreCoordinator = {
+    private lazy var persistentStoreCoordinator: NSPersistentStoreCoordinator = {
         let coordinator = NSPersistentStoreCoordinator(managedObjectModel: self.managedObjectModel)
         let url = self.applicationDocumentsDirectory.appendingPathComponent("\(self.modelName).sqlite")
         do {
-            try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
-        } catch {
-            var dict = [String: AnyObject]()
-            dict[NSLocalizedDescriptionKey] = "Failed to initialize the application's saved data" as AnyObject?
-            var failureReason = "There was an error creating or loading the application's saved data."
-            dict[NSLocalizedFailureReasonErrorKey] = failureReason as AnyObject?
-            
-            dict[NSUnderlyingErrorKey] = error as NSError
-            let wrappedError = NSError(domain: "com.Yalantis.DBClient", code: 9999, userInfo: dict)
-            print("Unresolved error \(wrappedError), \(wrappedError.userInfo)")
-            abort()
+            var options: [AnyHashable: Any]?
+            if self.migrationType == .lightweight {
+                options = [
+                    NSMigratePersistentStoresAutomaticallyOption: true,
+                    NSInferMappingModelAutomaticallyOption: true
+                ]
+            }
+            try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: options)
+        } catch let error {
+            if self.migrationType == .removeOnFailure {
+                let fileManager = FileManager.default
+                if fileManager.fileExists(atPath: url.path) {
+                    do {
+                        try fileManager.removeItem(at: url)
+                    } catch let error1 {
+                        fatalError("\(error1)")
+                    }
+                }
+                do {
+                    try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
+                } catch let error2 {
+                    fatalError("\(error2)")
+                }
+            } else {
+                fatalError("\(error)")
+            }
         }
         
         return coordinator
@@ -146,30 +165,12 @@ public class CoreDataDBClient {
         }
     }
     
-    fileprivate func fetchRequest(for entity: CoreDataModelConvertible.Type) -> NSFetchRequest<NSFetchRequestResult> {
-        return NSFetchRequest(entityName: entity.entityName)
-    }
-    
 }
 
 // MARK: - DBClient methods
 
 extension CoreDataDBClient: DBClient {
-    
-    @discardableResult
-    fileprivate func checkType<T>(_ inputType: T) -> CoreDataModelConvertible.Type {
-        switch inputType {
-        case let type as CoreDataModelConvertible.Type:
-            return type
 
-        default:
-            let model = String(describing: CoreDataDBClient.self)
-            let prot = String(describing: CoreDataModelConvertible.self)
-            let given = String(describing: inputType)
-            fatalError("`\(model)` can manage only types which conform to `\(prot)`. `\(given)` given.")
-        }
-    }
-    
     public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
         return CoreDataObservable(request: request, context: mainContext)
     }
@@ -198,7 +199,6 @@ extension CoreDataDBClient: DBClient {
     }
     
     /// Insert given objects into context and save it
-    ///
     /// If appropriate object already exists in DB it will be ignored and nothing will be inserted
     public func insert<T: Stored>(_ objects: [T]) -> Task<[T]> {
         checkType(T)
@@ -314,6 +314,24 @@ extension CoreDataDBClient: DBClient {
 }
 
 private extension CoreDataDBClient {
+    
+    func fetchRequest(for entity: CoreDataModelConvertible.Type) -> NSFetchRequest<NSFetchRequestResult> {
+        return NSFetchRequest(entityName: entity.entityName)
+    }
+    
+    @discardableResult
+    func checkType<T>(_ inputType: T) -> CoreDataModelConvertible.Type {
+        switch inputType {
+        case let type as CoreDataModelConvertible.Type:
+            return type
+            
+        default:
+            let modelType = String(describing: CoreDataDBClient.self)
+            let protocolType = String(describing: CoreDataModelConvertible.self)
+            let givenType = String(describing: inputType)
+            fatalError("`\(modelType)` can manage only types which conform to `\(protocolType)`. `\(givenType)` given.")
+        }
+    }
     
     func find<T: Stored>(objects: [T], in context: NSManagedObjectContext) -> [NSManagedObject]? {
         let coreDataModelType = checkType(T)
