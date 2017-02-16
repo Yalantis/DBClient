@@ -58,22 +58,12 @@ extension RealmDBClient: DBClient {
         let taskCompletionSource = TaskCompletionSource<[T]>()
         let neededType = modelType.realmClass()
         do {
-            var objects: [Object] = realm
-                .objects(neededType)
+            let objects = request
+                .applyTo(realmObjects: realm.objects(neededType))
                 .map { $0 }
-            if let descriptor = request.sortDescriptor {
-                let order: ComparisonResult = descriptor.ascending ? .orderedAscending : .orderedDescending
-                objects = objects.sorted(by: { (lhs, rhs) -> Bool in
-                    return descriptor.compare(lhs, to: rhs) == order
-                })
-            }
-            if let predicate = request.predicate {
-                objects = objects.filter { predicate.evaluate(with: $0) }
-            }
-            let mappedObjects = objects
                 .get(offset: request.fetchOffset, limit: request.fetchLimit)
                 .flatMap { modelType.from($0) as? T }
-            taskCompletionSource.set(result: mappedObjects)
+            taskCompletionSource.set(result: objects)
         } catch let error {
             taskCompletionSource.set(error: error)
         }
@@ -205,9 +195,25 @@ private extension RealmDBClient {
     
 }
 
-extension Array {
+internal extension FetchRequest {
     
-    func get<T: Object>(offset: Int, limit: Int) -> [T] {
+    func applyTo<T: Object>(realmObjects: Results<T>) -> Results<T> {
+        var objects: Results<T> = realmObjects
+        if let sortDescriptor = sortDescriptor, let key = sortDescriptor.key {
+            objects = realmObjects.sorted(byProperty: key, ascending: sortDescriptor.ascending)
+        }
+        if let predicate = predicate {
+            objects = realmObjects.filter(predicate)
+        }
+        
+        return objects
+    }
+    
+}
+
+private extension Array {
+    
+    func get<T: Stored>(offset: Int, limit: Int) -> [T] {
         var lim = 0
         var off = 0
         let count = self.count
@@ -221,7 +227,7 @@ extension Array {
             lim = offset + limit
         }
         
-        return (off..<lim).map { self[$0] as! T }
+        return (off..<lim).flatMap { self[$0] as? T }
     }
     
 }

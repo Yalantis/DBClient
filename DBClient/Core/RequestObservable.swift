@@ -10,8 +10,12 @@ import Foundation
 
 /// Describes changes in database:
 ///
-/// - initial: initial storred entities.
-/// - update: deletions, insertions, modifications.
+/// - initial: initial storred entities;
+/// - update:
+///         -- objects: all objects in current version of the collection;
+///         -- deletions: the indices in the previous version of the collection which were removed from this one;
+///         -- insertions: the indices in the new collection and object which was added in this version;
+///         -- modifications: the indices of the objects in the new collection and objects inself which was modified in this version;
 /// - error: an error occurred during fetch.
 public enum ObservableChange<T: Stored> {
     

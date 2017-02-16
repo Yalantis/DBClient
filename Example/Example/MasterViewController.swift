@@ -48,25 +48,26 @@ class MasterViewController: UITableViewController, DBClientInjectable {
     }
     
     private func observeChanges(_ changeSet: ObservableChange<User>) {
+        
         switch changeSet {
         case .initial(let initial):
-            self.objects.append(contentsOf: initial)
-            self.tableView.reloadData()
+            objects.append(contentsOf: initial)
+            tableView.reloadData()
             
         case .change(let change):
             self.objects = change.objects
-            self.tableView.beginUpdates()
+            tableView.beginUpdates()
             
             let insertedIndexPaths = change.insertions.map { IndexPath(row: $0.index, section: 0) }
-            self.tableView.insertRows(at: insertedIndexPaths, with: .automatic)
+            tableView.insertRows(at: insertedIndexPaths, with: .automatic)
             
             let deletedIndexPaths = change.deletions.map { IndexPath(row: $0, section: 0) }
-            self.tableView.deleteRows(at: deletedIndexPaths, with: .automatic)
+            tableView.deleteRows(at: deletedIndexPaths, with: .automatic)
             
             let updatedIndexPaths = change.modifications.map { IndexPath(row: $0.index, section: 0) }
-            self.tableView.reloadRows(at: updatedIndexPaths, with: .automatic)
+            tableView.reloadRows(at: updatedIndexPaths, with: .automatic)
             
-            self.tableView.endUpdates()
+            tableView.endUpdates()
             
         case .error(let error):
             print("Got an error: \(error)")

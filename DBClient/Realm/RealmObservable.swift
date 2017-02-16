@@ -11,7 +11,7 @@ import RealmSwift
 
 extension Object: Stored {}
 
-public class RealmObservable<T: Stored>: RequestObservable<T> {
+internal class RealmObservable<T: Stored>: RequestObservable<T> {
     
     internal let realm: Realm
     internal var notificationToken: NotificationToken?
@@ -28,14 +28,7 @@ public class RealmObservable<T: Stored>: RequestObservable<T> {
             fatalError("RealmDBClient can manage only types which conform to RealmModelConvertible")
         }
         
-        var realmObjects = realm.objects(realmModelType.realmClass())
-        if let predicate = request.predicate {
-            realmObjects = realmObjects.filter(predicate)
-        }
-        if let sortDescriptor = request.sortDescriptor, let key = sortDescriptor.key {
-            realmObjects = realmObjects.sorted(byProperty: key, ascending: sortDescriptor.ascending)
-        }
-        
+        let realmObjects = request.applyTo(realmObjects: realm.objects(realmModelType.realmClass()))
         notificationToken = realmObjects.addNotificationBlock { changes in
             switch changes {
             case .initial(let initial):
