@@ -77,7 +77,7 @@ extension RealmDBClient: DBClient {
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
         
-        let realmObjects = objects.flatMap { $0 as? RealmModelConvertible }.map { $0.toRealmObject() }
+        let realmObjects = objects.flatMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
         do {
             realm.beginWrite()
             realm.add(realmObjects)

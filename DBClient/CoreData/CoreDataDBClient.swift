@@ -44,6 +44,18 @@ public enum MigrationType {
     case lightweight
     // in case of failure old model file will be removed
     case removeOnFailure
+    // perform progressive migration with delegate
+    case progressive(MigrationManagerDelegate?)
+    
+    public func isLightweight() -> Bool {
+        switch self {
+        case .lightweight:
+            return true
+            
+        default:
+            return false
+        }
+    }
     
 }
 
@@ -68,10 +80,22 @@ public class CoreDataDBClient {
     
     // MARK: - CoreData stack
     
-    private lazy var applicationDocumentsDirectory: URL = {
+    private func isMigrationNeeded() -> Bool {
+        do {
+            let metadata = try NSPersistentStore.metadataForPersistentStore(with: storeUrl)
+            let model = self.managedObjectModel
+            
+            return model.isConfiguration(withName: nil, compatibleWithStoreMetadata: metadata)
+        } catch {
+            return false
+        }
+    }
+    
+    private lazy var storeUrl: URL = {
         let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let applicationDocumentsDirectory = urls[urls.count - 1]
         
-        return urls[urls.count - 1]
+        return applicationDocumentsDirectory.appendingPathComponent("\(self.modelName).sqlite")
     }()
     
     private lazy var managedObjectModel: NSManagedObjectModel = {
@@ -84,33 +108,85 @@ public class CoreDataDBClient {
     }()
     
     private lazy var persistentStoreCoordinator: NSPersistentStoreCoordinator = {
-        let coordinator = NSPersistentStoreCoordinator(managedObjectModel: self.managedObjectModel)
-        let url = self.applicationDocumentsDirectory.appendingPathComponent("\(self.modelName).sqlite")
+        let managedObjectModel = self.managedObjectModel
+        let coordinator = NSPersistentStoreCoordinator(managedObjectModel: managedObjectModel)
+        let storeType = NSSQLiteStoreType
+        let url = self.storeUrl
+        let isMigrationNeeded = self.isMigrationNeeded()
+        
+        if !isMigrationNeeded {
+            do {
+                try coordinator.addPersistentStore(
+                    ofType: storeType,
+                    configurationName: nil,
+                    at: url,
+                    options: nil
+                )
+                
+                return coordinator
+            } catch let error {
+                fatalError("\(error)")
+            }
+        }
+        
+        // need perform migration
         do {
             var options: [AnyHashable: Any]?
-            if self.migrationType == .lightweight {
+            if self.migrationType.isLightweight() {
+                // trying to make it automatically
                 options = [
                     NSMigratePersistentStoresAutomaticallyOption: true,
                     NSInferMappingModelAutomaticallyOption: true
                 ]
             }
-            try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: options)
+            try coordinator.addPersistentStore(
+                ofType: storeType,
+                configurationName: nil,
+                at: url,
+                options: options
+            )
         } catch let error {
-            if self.migrationType == .removeOnFailure {
-                let fileManager = FileManager.default
-                if fileManager.fileExists(atPath: url.path) {
-                    do {
-                        try fileManager.removeItem(at: url)
-                    } catch let error1 {
-                        fatalError("\(error1)")
-                    }
+            // lightweight migration failed
+            switch self.migrationType {
+            case .removeOnFailure:
+                // remove store and retry
+                try? FileManager.default.removeItem(at: url)
+                do {
+                    try coordinator.addPersistentStore(
+                        ofType: storeType,
+                        configurationName: nil,
+                        at: url,
+                        options: nil
+                    )
+                } catch let error {
+                    fatalError("\(error)")
+                }
+
+            case .progressive(let delegate):
+                let manager = CoreDataMigrationManager()
+                manager.delegate = delegate
+                manager.bundle = self.bundle
+                do {
+                    try manager.progressivelyMigrate(sourceStoreUrl: url, of: storeType, to: managedObjectModel)
+                } catch let error {
+                    fatalError("\(error)")
                 }
                 do {
-                    try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
-                } catch let error2 {
-                    fatalError("\(error2)")
+                    let options: [AnyHashable: Any] = [
+                        NSInferMappingModelAutomaticallyOption: true,
+                        NSSQLitePragmasOption: ["journal_mode": "DELETE"]
+                    ]
+                    try coordinator.addPersistentStore(
+                        ofType: storeType,
+                        configurationName: nil,
+                        at: url,
+                        options: options
+                    )
+                } catch let error {
+                    fatalError("\(error)")
                 }
-            } else {
+                
+            default:
                 fatalError("\(error)")
             }
         }
