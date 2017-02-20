@@ -65,6 +65,7 @@ public class CoreDataDBClient {
     private let modelName: String
     private let bundle: Bundle
     private let migrationType: MigrationType
+    private let persistentStoreType = NSSQLiteStoreType
     
     /// Constructor for client
     ///
@@ -82,7 +83,10 @@ public class CoreDataDBClient {
     
     private func isMigrationNeeded() -> Bool {
         do {
-            let metadata = try NSPersistentStore.metadataForPersistentStore(with: storeUrl)
+            let metadata = try NSPersistentStoreCoordinator.metadataForPersistentStore(
+                ofType: persistentStoreType,
+                at: storeUrl, options: nil
+            )
             let model = self.managedObjectModel
             
             return model.isConfiguration(withName: nil, compatibleWithStoreMetadata: metadata)
@@ -110,7 +114,7 @@ public class CoreDataDBClient {
     private lazy var persistentStoreCoordinator: NSPersistentStoreCoordinator = {
         let managedObjectModel = self.managedObjectModel
         let coordinator = NSPersistentStoreCoordinator(managedObjectModel: managedObjectModel)
-        let storeType = NSSQLiteStoreType
+        let storeType = self.persistentStoreType
         let url = self.storeUrl
         let isMigrationNeeded = self.isMigrationNeeded()
         
