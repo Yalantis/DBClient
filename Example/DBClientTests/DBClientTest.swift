@@ -72,7 +72,7 @@ class DBClientTest: XCTestCase {
     func cleanUpDatabase() {
         print("[DBClientTest]: Cleaning database")
         var count = 0
-        let request: Task<[User]> = dbClient.fetchAll()
+        let request: Task<[User]> = dbClient.findAll()
         execute { (expectation) in
             request
                 .continueOnSuccessWithTask { users -> Task<Void> in

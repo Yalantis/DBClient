@@ -78,7 +78,7 @@ public extension DBClient {
     /// Fetch all entities from database
     ///
     /// - Returns: Task with array of objects
-    func fetchAll<T: Stored>() -> Task<[T]> {
+    func findAll<T: Stored>() -> Task<[T]> {
         return execute(FetchRequest())
     }
     

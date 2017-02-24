@@ -89,7 +89,7 @@ final class UpdateTests: DBClientTest {
         
         // fetch and update them
         execute { expectation in
-            let task: Task<[User]> = self.dbClient.fetchAll()
+            let task: Task<[User]> = self.dbClient.findAll()
             task
                 .continueOnSuccessWithTask { users -> Task<[User]> in
                     let sortedUsers = users.sorted()
@@ -109,7 +109,7 @@ final class UpdateTests: DBClientTest {
         
         // check
         execute { expectation in
-            let task: Task<[User]> = self.dbClient.fetchAll()
+            let task: Task<[User]> = self.dbClient.findAll()
             task
                 .continueOnSuccessWith { users in
                     let fetchedUserNames = users

@@ -14,10 +14,10 @@ final class CoreDataMigrationManager: NSObject, MigrationManager {
     weak var delegate: MigrationManagerDelegate? = nil
     var bundle: Bundle = .main
     
-    func progressivelyMigrate(sourceStoreUrl: URL, of type: String, to finalModel: NSManagedObjectModel) throws {
+    func progressivelyMigrate(sourceStoreURL: URL, of type: String, to finalModel: NSManagedObjectModel) throws {
         let sourceMetadata = try NSPersistentStoreCoordinator.metadataForPersistentStore(
             ofType: type,
-            at: sourceStoreUrl,
+            at: sourceStoreURL,
             options: nil
         )
         if finalModel.isConfiguration(withName: nil, compatibleWithStoreMetadata: sourceMetadata) {
@@ -38,14 +38,14 @@ final class CoreDataMigrationManager: NSObject, MigrationManager {
         } else {
             mappingModels = [mappingModel]
         }
-        let destinationStoreURL = self.destinationStoreURL(with: sourceStoreUrl, modelName: modelName)
+        let destinationStoreURL = self.destinationStoreURL(with: sourceStoreURL, modelName: modelName)
         let manager = NSMigrationManager(sourceModel: sourceModel, destinationModel: destinationModel)
         manager.addObserver(self, forKeyPath: #keyPath(NSMigrationManager.migrationProgress), options: .new, context: nil)
         var migrated = false
         for mappingModel in mappingModels {
             do {
                 try manager.migrateStore(
-                    from: sourceStoreUrl,
+                    from: sourceStoreURL,
                     sourceType: type,
                     options: nil,
                     with: mappingModel,
@@ -64,9 +64,9 @@ final class CoreDataMigrationManager: NSObject, MigrationManager {
             return
         }
         // Migration was successful, move the files around to preserve the source in case things go bad
-        try backup(sourceStoreAtUrl: sourceStoreUrl, movingDestinationStoreAtUrl: destinationStoreURL)
+        try backup(sourceStoreAtURL: sourceStoreURL, movingDestinationStoreAtURL: destinationStoreURL)
         // We may not be at the "current" model yet, so recurse
-        try self.progressivelyMigrate(sourceStoreUrl: sourceStoreUrl, of: type, to: finalModel)
+        try self.progressivelyMigrate(sourceStoreURL: sourceStoreURL, of: type, to: finalModel)
     }
     
     func modelPaths() -> [String] {
@@ -96,11 +96,11 @@ final class CoreDataMigrationManager: NSObject, MigrationManager {
         // See if we can find a matching destination model
         var model: NSManagedObjectModel? = nil
         var mapping: NSMappingModel? = nil
-        var modelUrl: URL? = nil
+        var modelURL: URL? = nil
         for modelPath in modelPaths {
-            let mUrl = URL(fileURLWithPath: modelPath)
-            modelUrl = mUrl
-            model = NSManagedObjectModel(contentsOf: mUrl)
+            let mURL = URL(fileURLWithPath: modelPath)
+            modelURL = mURL
+            model = NSManagedObjectModel(contentsOf: mURL)
             mapping = NSMappingModel(from: [bundle], forSourceModel: sourceModel, destinationModel: model)
             // If we found a mapping model then proceed
             if mapping != nil {
@@ -108,11 +108,11 @@ final class CoreDataMigrationManager: NSObject, MigrationManager {
             }
         }
         // We have tested every model, if nil here we failed
-        if mapping == nil || mapping == nil || modelUrl == nil {
+        if mapping == nil || mapping == nil || modelURL == nil {
             throw MigrationError.mappingModelNotFound
         }
         
-        return (model!, mapping!, (modelUrl!.lastPathComponent as NSString).deletingPathExtension)
+        return (model!, mapping!, (modelURL!.lastPathComponent as NSString).deletingPathExtension)
     }
     
     func destinationStoreURL(with sourceStoreURL: URL, modelName: String) -> URL {
@@ -125,17 +125,17 @@ final class CoreDataMigrationManager: NSObject, MigrationManager {
         return URL(fileURLWithPath: storePath)
     }
     
-    func backup(sourceStoreAtUrl: URL, movingDestinationStoreAtUrl: URL) throws {
+    func backup(sourceStoreAtURL: URL, movingDestinationStoreAtURL: URL) throws {
         let guid = ProcessInfo.processInfo.globallyUniqueString
         let backupPath = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true).appendingPathComponent(guid)
         let fileManager = FileManager.default
-        try fileManager.moveItem(at: sourceStoreAtUrl, to: backupPath)
+        try fileManager.moveItem(at: sourceStoreAtURL, to: backupPath)
         // Move the destination to the source path
         do {
-            try fileManager.moveItem(at: movingDestinationStoreAtUrl, to: sourceStoreAtUrl)
+            try fileManager.moveItem(at: movingDestinationStoreAtURL, to: sourceStoreAtURL)
         } catch {
             // Try to back out the source move first, no point in checking it for errors
-            try fileManager.moveItem(at: backupPath, to: sourceStoreAtUrl)
+            try fileManager.moveItem(at: backupPath, to: sourceStoreAtURL)
             throw error
         }
     }

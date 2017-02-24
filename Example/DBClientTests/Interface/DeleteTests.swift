@@ -48,7 +48,7 @@ final class DeleteTests: DBClientTest {
         }
         // check if they have been removed
         execute { expectation in
-            let request: Task<[User]> = self.dbClient.fetchAll()
+            let request: Task<[User]> = self.dbClient.findAll()
             request
                 .continueOnSuccessWith { users in
                     XCTAssert(users.isEmpty)

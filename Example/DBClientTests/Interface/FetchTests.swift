@@ -30,7 +30,7 @@ class FetchTests: DBClientTest {
         let randomUsers: [User] = createRandomUsers(10).sorted()
         
         // check if generated users have been successfully saved
-        let request: Task<[User]> = dbClient.fetchAll()
+        let request: Task<[User]> = dbClient.findAll()
         execute { expectation in
             request
                 .continueOnSuccessWith { fetchedUsers in

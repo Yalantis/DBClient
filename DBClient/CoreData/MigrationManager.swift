@@ -36,6 +36,6 @@ public protocol MigrationManager {
     var delegate: MigrationManagerDelegate? { get set }
     var bundle: Bundle { get set }
     
-    func progressivelyMigrate(sourceStoreUrl: URL, of type: String, to model: NSManagedObjectModel) throws
+    func progressivelyMigrate(sourceStoreURL: URL, of type: String, to model: NSManagedObjectModel) throws
     
 }
