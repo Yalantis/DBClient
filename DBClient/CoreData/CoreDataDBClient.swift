@@ -81,21 +81,6 @@ public class CoreDataDBClient {
     
     // MARK: - CoreData stack
     
-    private func isMigrationNeeded() -> Bool {
-        do {
-            let metadata = try NSPersistentStoreCoordinator.metadataForPersistentStore(
-                ofType: persistentStoreType,
-                at: storeURL,
-                options: nil
-            )
-            let model = self.managedObjectModel
-            
-            return model.isConfiguration(withName: nil, compatibleWithStoreMetadata: metadata)
-        } catch {
-            return false
-        }
-    }
-    
     private lazy var storeURL: URL = {
         let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         let applicationDocumentsDirectory = urls[urls.count - 1]
@@ -111,6 +96,80 @@ public class CoreDataDBClient {
         
         return objectModel
     }()
+    
+    private lazy var persistentStoreCoordinator: NSPersistentStoreCoordinator = {
+        let coordinator = NSPersistentStoreCoordinator(managedObjectModel:  self.managedObjectModel)
+        
+        if !self.isMigrationNeeded() {
+            do {
+                try coordinator.addPersistentStore(
+                    ofType: self.persistentStoreType,
+                    configurationName: nil,
+                    at: self.storeURL,
+                    options: nil
+                )
+                
+                return coordinator
+            } catch let error {
+                fatalError("\(error)")
+            }
+        }
+        
+        // need perform migration
+        do {
+            try self.performMigration(coordinator)
+        } catch let error {
+            fatalError("\(error)")
+        }
+        
+        return coordinator
+    }()
+    
+    private lazy var rootContext: NSManagedObjectContext = {
+        let coordinator = self.persistentStoreCoordinator
+        let parentContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        parentContext.persistentStoreCoordinator = coordinator
+        
+        return parentContext
+    }()
+    
+    fileprivate lazy var mainContext: NSManagedObjectContext = {
+        let mainContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        mainContext.parent = self.rootContext
+        
+        return mainContext
+    }()
+    
+    private lazy var readManagedContext: NSManagedObjectContext = {
+        let fetchContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        fetchContext.parent = self.mainContext
+        
+        return fetchContext
+    }()
+    
+    private lazy var writeManagedContext: NSManagedObjectContext = {
+        let fetchContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        fetchContext.parent = self.mainContext
+        
+        return fetchContext
+    }()
+    
+    // MARK: - Migration
+    
+    private func isMigrationNeeded() -> Bool {
+        do {
+            let metadata = try NSPersistentStoreCoordinator.metadataForPersistentStore(
+                ofType: persistentStoreType,
+                at: storeURL,
+                options: nil
+            )
+            let model = self.managedObjectModel
+            
+            return model.isConfiguration(withName: nil, compatibleWithStoreMetadata: metadata)
+        } catch {
+            return false
+        }
+    }
     
     private func performMigration(_ coordinator: NSPersistentStoreCoordinator) throws {
         var options: [AnyHashable: Any]?
@@ -171,62 +230,7 @@ public class CoreDataDBClient {
         )
     }
     
-    private lazy var persistentStoreCoordinator: NSPersistentStoreCoordinator = {
-        let coordinator = NSPersistentStoreCoordinator(managedObjectModel:  self.managedObjectModel)
-        
-        if !self.isMigrationNeeded() {
-            do {
-                try coordinator.addPersistentStore(
-                    ofType: self.persistentStoreType,
-                    configurationName: nil,
-                    at: self.storeURL,
-                    options: nil
-                )
-                
-                return coordinator
-            } catch let error {
-                fatalError("\(error)")
-            }
-        }
-        
-        // need perform migration
-        do {
-            try self.performMigration(coordinator)
-        } catch let error {
-            fatalError("\(error)")
-        }
-        
-        return coordinator
-    }()
-    
-    private lazy var rootContext: NSManagedObjectContext = {
-        let coordinator = self.persistentStoreCoordinator
-        let parentContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-        parentContext.persistentStoreCoordinator = coordinator
-        
-        return parentContext
-    }()
-    
-    fileprivate lazy var mainContext: NSManagedObjectContext = {
-        let mainContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
-        mainContext.parent = self.rootContext
-        
-        return mainContext
-    }()
-    
-    private lazy var readManagedContext: NSManagedObjectContext = {
-        let fetchContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-        fetchContext.parent = self.mainContext
-        
-        return fetchContext
-    }()
-    
-    private lazy var writeManagedContext: NSManagedObjectContext = {
-        let fetchContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-        fetchContext.parent = self.mainContext
-        
-        return fetchContext
-    }()
+    // MARK: - Read/write
     
     fileprivate func performWriteTask(_ closure: @escaping (NSManagedObjectContext, (() throws -> ())) -> ()) {
         let context = writeManagedContext
