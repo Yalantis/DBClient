@@ -15,18 +15,17 @@ There're 3 podspecs:
 Core, common classes for any database:
 
 ```ruby
-pod 'DBClient', '~> 1.0'
+pod 'DBClient', '~> 0.3'
 ```
 
 Wrapper for CoreData:
 
 ```ruby
-pod 'DBClient/CoreData', '~> 1.0'
+pod 'DBClient/CoreData', '~> 0.3'
 ```
 
 Wrapper for Realm:
 
 ```ruby
-pod 'DBClient/Realm', '~> 1.0'
+pod 'DBClient/Realm', '~> 0.3'
 ```
-⚠️ It's not ready yet (there're problems with deletion and observation)

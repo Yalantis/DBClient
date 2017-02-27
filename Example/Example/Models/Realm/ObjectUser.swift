@@ -12,7 +12,7 @@ import RealmSwift
 class ObjectUser: Object {
 
     override class func primaryKey() -> String? {
-        return "id"
+        return #keyPath(ObjectUser.id)
     }
 
     dynamic var id: String = ""

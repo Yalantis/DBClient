@@ -1,6 +1,6 @@
 //
 //  ManagedUser+CoreDataClass.swift
-//  YChat
+//  DBClient-Example
 //
 //  Created by Roman Kyrylenko on 01/06/17.
 //  Copyright © 2016 Yalantis. All rights reserved.
@@ -13,3 +13,4 @@ import CoreData
 public class ManagedUser: NSManagedObject {
 
 }
+

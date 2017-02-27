@@ -12,10 +12,15 @@ import RealmSwift
 
 private struct DBClientInjector {
 
-    static var coreDataClient: DBClient = CoreDataDBClient(forModel: "Users")
+    static let coreDataClient: DBClient = CoreDataDBClient(forModel: "Users")
 
-    static var realmClient: DBClient = {
-        let realm = try! Realm()
+    static let realmClient: DBClient = {
+        let realm: Realm
+        do {
+            realm = try Realm()
+        } catch {
+            fatalError(error.localizedDescription)
+        }
         return RealmDBClient(realm: realm)
     }()
 
@@ -31,4 +36,5 @@ extension DBClientInjectable {
 //            return DBClientInjector.realmClient
         }
     }
+    
 }

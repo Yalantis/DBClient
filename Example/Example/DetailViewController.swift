@@ -1,6 +1,6 @@
 //
 //  DetailViewController.swift
-//  Example
+//  DBClient-Example
 //
 //  Created by Serhii Butenko on 11/1/17.
 //  Copyright © 2017 Yalantis. All rights reserved.
@@ -8,16 +8,24 @@
 
 import UIKit
 
-class DetailViewController: UIViewController {
+class DetailViewController: UIViewController, DBClientInjectable {
 
     var detailItem: User!
     
-    @IBOutlet private weak var detailLabel: UILabel!
+    @IBOutlet private weak var userNameTextField: UITextField!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        detailLabel.text = detailItem.name
+        userNameTextField.text = detailItem.name
+        title = detailItem.id
+    }
+    
+    @IBAction private func saveButtonAction() {
+        detailItem.name = userNameTextField.text ?? ""
+        dbClient.update(detailItem).continueOnSuccessWith(.mainThread) { _ in
+            self.navigationController?.popViewController(animated: true)
+        }
     }
     
 }
