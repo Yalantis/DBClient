@@ -48,4 +48,12 @@ extension User: CoreDataModelConvertible {
         return User(id: id, name: name)
     }
     
+    func isPrimaryValueEqualTo(value: Any) -> Bool {
+        if let value = value as? String {
+            return value == id
+        }
+        
+        return false
+    }
+    
 }
