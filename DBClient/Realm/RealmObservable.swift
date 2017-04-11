@@ -23,7 +23,7 @@ internal class RealmObservable<T: Stored>: RequestObservable<T> {
     
     open override func observe(_ closure: @escaping (ObservableChange<T>) -> Void) {
         precondition(notificationToken == nil, "Observable can be observed only once")
-        
+
         guard let realmModelType = T.self as? RealmModelConvertible.Type else {
             fatalError("RealmDBClient can manage only types which conform to RealmModelConvertible")
         }
@@ -39,7 +39,7 @@ internal class RealmObservable<T: Stored>: RequestObservable<T> {
                 let mappedObjects = objects.map { realmModelType.from($0) as! T }
                 let insertions = insertions.map { (index: $0, element: mappedObjects[$0]) }
                 let modifications = modifications.map { (index: $0, element: mappedObjects[$0]) }
-                let mappedChange: ObservableChange.ModelChange = (
+                let mappedChange: ObservableChange<T>.ModelChange = (
                     objects: Array(mappedObjects),
                     deletions: deletions,
                     insertions: insertions,
