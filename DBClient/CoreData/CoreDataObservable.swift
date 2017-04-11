@@ -106,7 +106,7 @@ private class FetchedResultsControllerDelegate<T: NSManagedObject>: NSObject, NS
         case .insert:
             batchChanges.append(.insert(newIndexPath!.row, object))
             
-        case .update:
+        case .update, .move:
             batchChanges.append(.update(indexPath!.row, object))
             
         default: break
