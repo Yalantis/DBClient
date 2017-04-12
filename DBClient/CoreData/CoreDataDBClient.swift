@@ -264,7 +264,7 @@ extension CoreDataDBClient: DBClient {
     }
     
     public func execute<T: Stored>(_ request: FetchRequest<T>) -> Task<[T]> {
-        let coreDataModelType = checkType(T)
+        let coreDataModelType = checkType(T.self)
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
         
@@ -289,7 +289,7 @@ extension CoreDataDBClient: DBClient {
     /// Insert given objects into context and save it
     /// If appropriate object already exists in DB it will be ignored and nothing will be inserted
     public func insert<T: Stored>(_ objects: [T]) -> Task<[T]> {
-        checkType(T)
+        checkType(T.self)
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
         performWriteTask { context, savingClosure in
@@ -300,7 +300,7 @@ extension CoreDataDBClient: DBClient {
                     continue
                 }
                 
-                let managedObject = object.upsertManagedObject(in: context, existedInstance: nil)
+                _ = object.upsertManagedObject(in: context, existedInstance: nil)
                 insertedObjects.append(object as! T)
             }
 
@@ -317,7 +317,7 @@ extension CoreDataDBClient: DBClient {
     /// Method to update existed in DB objects
     /// if there is no such object in db nothing will happened
     public func update<T: Stored>(_ objects: [T]) -> Task<[T]> {
-        checkType(T)
+        checkType(T.self)
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
         performWriteTask { context, savingClosure in
@@ -329,7 +329,7 @@ extension CoreDataDBClient: DBClient {
                     continue
                 }
                 
-                object.upsertManagedObject(in: context, existedInstance: storedObject)
+                _ = object.upsertManagedObject(in: context, existedInstance: storedObject)
                 updatedObjects.append(object as! T)
             }
             
@@ -345,7 +345,7 @@ extension CoreDataDBClient: DBClient {
     
     /// Update object if it exists or insert new one otherwise
     public func upsert<T: Stored>(_ objects: [T]) -> Task<(updated: [T], inserted: [T])> {
-        checkType(T)
+        checkType(T.self)
         
         let taskCompletionSource = TaskCompletionSource<(updated: [T], inserted: [T])>()
         performWriteTask { context, savingClosure in
@@ -354,7 +354,7 @@ extension CoreDataDBClient: DBClient {
             let foundObjects = self.find(objects: objects, in: context)
             
             for (object, storedObject) in foundObjects {
-                object.upsertManagedObject(in: context, existedInstance: storedObject)
+                _ = object.upsertManagedObject(in: context, existedInstance: storedObject)
                 if storedObject == nil {
                     insertedObjects.append(object as! T)
                 } else {
@@ -376,7 +376,7 @@ extension CoreDataDBClient: DBClient {
     /// For each element in collection:
     /// After all deletes try to save context
     public func delete<T: Stored>(_ objects: [T]) -> Task<Void> {
-        checkType(T)
+        checkType(T.self)
         
         let taskCompletionSource = TaskCompletionSource<Void>()
         performWriteTask { context, savingClosure in
@@ -417,7 +417,7 @@ private extension CoreDataDBClient {
     }
     
     func find<T: Stored>(_ objects: [T], in context: NSManagedObjectContext) -> [NSManagedObject] {
-        let coreDataModelType = checkType(T)
+        let coreDataModelType = checkType(T.self)
         guard let primaryKeyName = T.primaryKeyName else {
             return []
         }
@@ -441,9 +441,11 @@ private extension CoreDataDBClient {
         
         return convert(objects: objects).map { object -> (CoreDataModelConvertible, NSManagedObject?) in
             let managedObject = storedObjects.first(where: { (obj: NSManagedObject) -> Bool in
-                let value = obj.value(forKey: primaryKeyName)
+                if let value = obj.value(forKey: primaryKeyName) {
+                    return object.isPrimaryValueEqualTo(value: value)
+                }
                 
-                return object.isPrimaryValueEqualTo(value: value)
+                return false
             })
             
             return (object, managedObject)
@@ -451,7 +453,7 @@ private extension CoreDataDBClient {
     }
     
     func convert<T: Stored>(objects: [T]) -> [CoreDataModelConvertible] {
-        checkType(T)
+        checkType(T.self)
         
         return objects.flatMap { $0 as? CoreDataModelConvertible }
     }
