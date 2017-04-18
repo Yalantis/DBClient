@@ -199,7 +199,7 @@ internal extension FetchRequest {
             objects = realmObjects.sorted(byProperty: key, ascending: sortDescriptor.ascending)
         }
         if let predicate = predicate {
-            objects = realmObjects.filter(predicate)
+            objects = objects.filter(predicate)
         }
         
         return objects
