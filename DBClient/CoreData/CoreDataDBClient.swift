@@ -34,6 +34,9 @@ public protocol CoreDataModelConvertible: Stored {
     /// The name of the entity from ".xcdatamodeld"
     static var entityName: String { get }
     
+    /// Decides whether primary value of object equal to given
+    func isPrimaryValueEqualTo(value: Any) -> Bool
+    
 }
 
 extension NSManagedObject: Stored {}
@@ -291,16 +294,16 @@ extension CoreDataDBClient: DBClient {
         let taskCompletionSource = TaskCompletionSource<[T]>()
         performWriteTask { context, savingClosure in
             var insertedObjects = [T]()
-            objects.forEach { object in
-                if self.find(objects: [object], in: context)?.first != nil {
-                    return
+            let foundObjects = self.find(objects: objects, in: context)
+            for (object, storedObject) in foundObjects {
+                if storedObject != nil {
+                    continue
                 }
                 
-                let convertedObject = self.convert(objects: [object])[0]
-                let managedObject = convertedObject.upsertManagedObject(in: context, existedInstance: nil)
-                insertedObjects.append(object)
+                let managedObject = object.upsertManagedObject(in: context, existedInstance: nil)
+                insertedObjects.append(object as! T)
             }
-            
+
             do {
                 try savingClosure()
                 taskCompletionSource.set(result: insertedObjects)
@@ -320,14 +323,14 @@ extension CoreDataDBClient: DBClient {
         performWriteTask { context, savingClosure in
             var updatedObjects = [T]()
             
-            for object in objects {
-                guard let storedObject = self.find(objects: [object], in: context)?.first else {
+            let foundObjects = self.find(objects: objects, in: context)
+            for (object, storedObject) in foundObjects {
+                guard let storedObject = storedObject else {
                     continue
                 }
                 
-                let convertedObject = self.convert(objects: [object])[0]
-                convertedObject.upsertManagedObject(in: context, existedInstance: storedObject)
-                updatedObjects.append(object)
+                object.upsertManagedObject(in: context, existedInstance: storedObject)
+                updatedObjects.append(object as! T)
             }
             
             do {
@@ -348,15 +351,14 @@ extension CoreDataDBClient: DBClient {
         performWriteTask { context, savingClosure in
             var updatedObjects = [T]()
             var insertedObjects = [T]()
+            let foundObjects = self.find(objects: objects, in: context)
             
-            for object in objects {
-                let storedObject: NSManagedObject? = self.find(objects: [object], in: context)?.first
-                let convertedObject = self.convert(objects: [object])[0]
-                convertedObject.upsertManagedObject(in: context, existedInstance: storedObject)
+            for (object, storedObject) in foundObjects {
+                object.upsertManagedObject(in: context, existedInstance: storedObject)
                 if storedObject == nil {
-                    insertedObjects.append(object)
+                    insertedObjects.append(object as! T)
                 } else {
-                    updatedObjects.append(object)
+                    updatedObjects.append(object as! T)
                 }
             }
             
@@ -378,11 +380,7 @@ extension CoreDataDBClient: DBClient {
         
         let taskCompletionSource = TaskCompletionSource<Void>()
         performWriteTask { context, savingClosure in
-            guard let foundObjects = self.find(objects: objects, in: context) else {
-                taskCompletionSource.set(result: ())
-                return
-            }
-            
+            let foundObjects = self.find(objects, in: context)
             foundObjects.forEach { context.delete($0) }
             
             do {
@@ -418,20 +416,38 @@ private extension CoreDataDBClient {
         }
     }
     
-    func find<T: Stored>(objects: [T], in context: NSManagedObjectContext) -> [NSManagedObject]? {
+    func find<T: Stored>(_ objects: [T], in context: NSManagedObjectContext) -> [NSManagedObject] {
         let coreDataModelType = checkType(T)
         guard let primaryKeyName = T.primaryKeyName else {
-            return nil
+            return []
         }
         
         let ids = objects.flatMap { $0.valueOfPrimaryKey }
         let fetchRequest = self.fetchRequest(for: coreDataModelType)
         fetchRequest.predicate = NSPredicate(format: "\(primaryKeyName) IN %@", ids)
-        guard let result = try? context.fetch(fetchRequest) as? [NSManagedObject] else {
-            return nil
+        guard let result = try? context.fetch(fetchRequest), let storedObjects = result as? [NSManagedObject] else {
+            return []
         }
         
-        return result
+        return storedObjects
+    }
+    
+    func find<T: Stored>(objects: [T], in context: NSManagedObjectContext) -> [(object: CoreDataModelConvertible, storedObject: NSManagedObject?)] {
+        guard let primaryKeyName = T.primaryKeyName else {
+            return []
+        }
+        
+        let storedObjects = find(objects, in: context)
+        
+        return convert(objects: objects).map { object -> (CoreDataModelConvertible, NSManagedObject?) in
+            let managedObject = storedObjects.first(where: { (obj: NSManagedObject) -> Bool in
+                let value = obj.value(forKey: primaryKeyName)
+                
+                return object.isPrimaryValueEqualTo(value: value)
+            })
+            
+            return (object, managedObject)
+        }
     }
     
     func convert<T: Stored>(objects: [T]) -> [CoreDataModelConvertible] {
