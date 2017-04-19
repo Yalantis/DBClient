@@ -66,19 +66,18 @@ class CoreDataObservable<T: Stored, U: NSManagedObject>: RequestObservable<T> {
             closure(.initial(mapped))
             observer = closure
             
-            fetchedResultsControllerDelegate.observer = { [unowned self] change in
-                if case .change(let change) = change {
-                    let mappedInsertions = change.insertions.map { ($0, coreDataModelType.from($1) as! T) }
-                    let mappedModifications = change.modifications.map { ($0, coreDataModelType.from($1) as! T) }
-                    let mappedObjects = change.objects.map { coreDataModelType.from($0) as! T }
-                    let mappedChange: ObservableChange.ModelChange = (
-                        objects: mappedObjects,
-                        deletions: change.deletions,
-                        insertions: mappedInsertions,
-                        modifications: mappedModifications
-                    )
-                    self.observer?(.change(mappedChange))
-                }
+            fetchedResultsControllerDelegate.observer = { [unowned self] (change: ObservableChange<U>) in
+                guard case .change(let change) = change else { return }
+                let mappedInsertions = change.insertions.map { ($0, coreDataModelType.from($1) as! T) }
+                let mappedModifications = change.modifications.map { ($0, coreDataModelType.from($1) as! T) }
+                let mappedObjects = change.objects.map { coreDataModelType.from($0) as! T }
+                let mappedChange: ObservableChange<T>.ModelChange = (
+                    objects: mappedObjects,
+                    deletions: change.deletions,
+                    insertions: mappedInsertions,
+                    modifications: mappedModifications
+                )
+                self.observer?(.change(mappedChange))
             }
             
             try fetchedResultsController.performFetch()
@@ -107,11 +106,8 @@ private class FetchedResultsControllerDelegate<T: NSManagedObject>: NSObject, NS
         case .insert:
             batchChanges.append(.insert(newIndexPath!.row, object))
             
-        case .update:
+        case .update, .move:
             batchChanges.append(.update(indexPath!.row, object))
-            
-        default: break
-            
         }
     }
     
@@ -120,11 +116,12 @@ private class FetchedResultsControllerDelegate<T: NSManagedObject>: NSObject, NS
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        let deleted = batchChanges.filter { $0.isDeletion }.map { $0.index() }
-        let inserted = batchChanges.filter { $0.isInsertion }.map { (index: $0.index(), element: $0.object()) }
-        let updated = batchChanges.filter { $0.isUpdate }.map { (index: $0.index(), element: $0.object()) }
-        let mappedChange: ObservableChange.ModelChange = (
-            objects: controller.fetchedObjects as? [T] ?? [],
+        let deleted: [Int] = batchChanges.filter { $0.isDeletion }.map { $0.index() }
+        let inserted: [(index: Int, element: T)] = batchChanges.filter { $0.isInsertion }.map { (index: $0.index(), element: $0.object()) }
+        let updated: [(index: Int, element: T)] = batchChanges.filter { $0.isUpdate }.map { (index: $0.index(), element: $0.object()) }
+        let objects: [T] = controller.fetchedObjects as? [T] ?? []
+        let mappedChange: ObservableChange<T>.ModelChange = (
+            objects: objects,
             deletions: deleted,
             insertions: inserted,
             modifications: updated

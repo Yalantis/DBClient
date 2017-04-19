@@ -57,23 +57,19 @@ extension RealmDBClient: DBClient {
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
         let neededType = modelType.realmClass()
-        do {
-            let objects = request
-                .applyTo(realmObjects: realm.objects(neededType))
-                .map { $0 }
-                .get(offset: request.fetchOffset, limit: request.fetchLimit)
-                .flatMap { modelType.from($0) as? T }
-            taskCompletionSource.set(result: objects)
-        } catch let error {
-            taskCompletionSource.set(error: error)
-        }
+        let objects = request
+            .applyTo(realmObjects: realm.objects(neededType))
+            .map { $0 }
+            .get(offset: request.fetchOffset, limit: request.fetchLimit)
+            .flatMap { modelType.from($0) as? T }
+        taskCompletionSource.set(result: objects)
         
         return taskCompletionSource.task
     }
     
     /// Inserts new objects to database. If object with such `primaryKeyValue` already exists Realm'll throw an error
     public func insert<T: Stored>(_ objects: [T]) -> Task<[T]> {
-        checkType(T)
+        checkType(T.self)
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
         
@@ -92,7 +88,7 @@ extension RealmDBClient: DBClient {
     
     /// Updates objects which are already in db.
     public func update<T: Stored>(_ objects: [T]) -> Task<[T]> {
-        checkType(T)
+        checkType(T.self)
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
         let realmObjects = separate(objects: objects)
@@ -112,7 +108,7 @@ extension RealmDBClient: DBClient {
     
     /// Removes objects by it `primaryKeyValue`s
     public func delete<T: Stored>(_ objects: [T]) -> Task<Void> {
-        let type = checkType(T)
+        let type = checkType(T.self)
         
         let taskCompletionSource = TaskCompletionSource<Void>()
         let realmType = type.realmClass()
@@ -132,7 +128,7 @@ extension RealmDBClient: DBClient {
     }
     
     public func upsert<T : Stored>(_ objects: [T]) -> Task<(updated: [T], inserted: [T])> {
-        checkType(T)
+        checkType(T.self)
         
         let taskCompletionSource = TaskCompletionSource<(updated: [T], inserted: [T])>()
         let separatedObjects = separate(objects: objects)
@@ -150,7 +146,7 @@ extension RealmDBClient: DBClient {
     }
     
     public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
-        checkType(T)
+        checkType(T.self)
         
         return RealmObservable(request: request, realm: realm)
     }
