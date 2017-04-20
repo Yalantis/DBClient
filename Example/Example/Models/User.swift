@@ -22,7 +22,7 @@ class User {
 }
 
 extension User: Stored {
-    
+
     public static var primaryKeyName: String? {
         return "id"
     }
@@ -30,7 +30,7 @@ extension User: Stored {
     public var valueOfPrimaryKey: CVarArg? {
         return id
     }
-    
+
 }
 
 extension User {
