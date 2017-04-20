@@ -32,7 +32,7 @@ class CoreDataObservable<T: Stored, U: NSManagedObject>: RequestObservable<T> {
                 fetchRequest.sortDescriptors = [sortDescriptor]
             } else {
                 guard let primaryKeyName = coreDataModelType.primaryKeyName else {
-                    fatalError("Core data model must have primaryKeyName")
+                    fatalError("Fetch request shoud have sortDescriptor or core data model need implement primaryKeyName")
                 }
                 let defaultSortDescriptor = NSSortDescriptor(key: primaryKeyName, ascending: true)
                 fetchRequest.sortDescriptors = [defaultSortDescriptor]
