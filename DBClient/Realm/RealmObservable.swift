@@ -9,7 +9,13 @@
 import Foundation
 import RealmSwift
 
-extension Object: Stored {}
+extension Object: Stored {
+
+    public static var primaryKeyName: String? { return nil }
+    
+    public var valueOfPrimaryKey: CVarArg? { return nil }
+
+}
 
 internal class RealmObservable<T: Stored>: RequestObservable<T> {
     

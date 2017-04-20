@@ -11,7 +11,7 @@ import DBClient
 import RealmSwift
 
 extension User: RealmModelConvertible {
-
+    
     static func from(_ realmObject: Object) -> Stored {
         guard let objectUser = realmObject as? ObjectUser else {
             fatalError("Can't create `User` from \(realmObject)")

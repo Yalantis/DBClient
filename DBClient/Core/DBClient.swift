@@ -20,14 +20,6 @@ public protocol Stored {
     
 }
 
-public extension Stored {
-    
-    static var primaryKeyName: String? { return nil }
-    
-    var valueOfPrimaryKey: CVarArg? { return nil }
-    
-}
-
 /// Describes abstract database transactions, common for all engines.
 public protocol DBClient {
     

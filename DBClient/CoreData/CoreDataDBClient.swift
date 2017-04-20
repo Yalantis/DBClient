@@ -39,7 +39,13 @@ public protocol CoreDataModelConvertible: Stored {
     
 }
 
-extension NSManagedObject: Stored {}
+extension NSManagedObject: Stored {
+
+    public static var primaryKeyName: String? { return nil }
+    
+    public var valueOfPrimaryKey: CVarArg? { return nil }
+
+}
 
 public enum MigrationType {
     
