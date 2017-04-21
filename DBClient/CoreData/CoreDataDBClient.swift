@@ -174,7 +174,7 @@ public class CoreDataDBClient {
             )
             let model = self.managedObjectModel
             
-            return model.isConfiguration(withName: nil, compatibleWithStoreMetadata: metadata)
+            return !model.isConfiguration(withName: nil, compatibleWithStoreMetadata: metadata)
         } catch {
             return false
         }
