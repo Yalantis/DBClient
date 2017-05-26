@@ -18,7 +18,7 @@ extension NSManagedObjectContext {
         try save()
         
         if includingParent, let parent = parent {
-            try performAndWait {
+            try parent.performAndWait {
                 try parent.save(includingParent: true)
             }
         }
