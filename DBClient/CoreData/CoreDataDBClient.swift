@@ -245,9 +245,7 @@ public class CoreDataDBClient {
         let context = writeManagedContext
         context.perform {
             closure(context) {
-                try context.save()
-                try self.mainContext.save()
-                try self.rootContext.save()
+                try context.save(includingParent: true)
             }
         }
     }
