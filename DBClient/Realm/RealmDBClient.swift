@@ -52,7 +52,7 @@ public class RealmDBClient {
 extension RealmDBClient: DBClient {
     
     /// Executes given request. Fetches all entities and then applies all given restrictions
-    public func execute<T: Stored>(_ request: FetchRequest<T>) -> Task<[T]> {
+    public func execute<T>(_ request: FetchRequest<T>) -> Task<[T]> {
         let modelType = checkType(T.self)
         
         let taskCompletionSource = TaskCompletionSource<[T]>()
@@ -145,7 +145,7 @@ extension RealmDBClient: DBClient {
         return taskCompletionSource.task
     }
     
-    public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
+    public func observable<T>(for request: FetchRequest<T>) -> RequestObservable<T> {
         checkType(T.self)
         
         return RealmObservable(request: request, realm: realm)
@@ -193,10 +193,10 @@ private extension RealmDBClient {
 
 internal extension FetchRequest {
     
-    func applyTo<T: Object>(realmObjects: Results<T>) -> Results<T> {
+    func applyTo<T>(realmObjects: Results<T>) -> Results<T> {
         var objects: Results<T> = realmObjects
         if let sortDescriptor = sortDescriptor, let key = sortDescriptor.key {
-            objects = realmObjects.sorted(byProperty: key, ascending: sortDescriptor.ascending)
+            objects = realmObjects.sorted(byKeyPath: key, ascending: sortDescriptor.ascending)
         }
         if let predicate = predicate {
             objects = objects.filter(predicate)

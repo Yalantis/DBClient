@@ -18,13 +18,13 @@ extension NSManagedObjectContext {
         try save()
         
         if includingParent, let parent = parent {
-            try parent.performAndWait {
+            try parent.safePerformAndWait {
                 try parent.save(includingParent: true)
             }
         }
     }
     
-    func performAndWait(_ block:  @escaping (Void) throws -> Void) throws {
+    func safePerformAndWait(_ block:  @escaping () throws -> Void) throws {
         var outError: Error?
         
         performAndWait {

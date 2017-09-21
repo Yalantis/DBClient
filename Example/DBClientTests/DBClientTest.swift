@@ -52,7 +52,7 @@ class DBClientTest: XCTestCase {
             }
         }
         waitForExpectations(timeout: expectationTimeout) { (error) in
-            XCTAssert(error == nil, "\(error)")
+            XCTAssert(error == nil, String(describing: error))
         }
     }
     

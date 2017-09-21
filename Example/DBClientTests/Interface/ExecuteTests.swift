@@ -40,7 +40,7 @@ final class ExecuteTests: DBClientTest {
                 .execute(request)
                 .continueWith { task in
                     guard let users = task.result else {
-                        XCTFail("\(task.error)")
+                        XCTFail(String(describing: task.error))
                         return
                     }
                     

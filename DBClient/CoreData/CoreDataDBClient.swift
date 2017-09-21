@@ -263,11 +263,11 @@ public class CoreDataDBClient {
 
 extension CoreDataDBClient: DBClient {
 
-    public func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T> {
+    public func observable<T>(for request: FetchRequest<T>) -> RequestObservable<T> {
         return CoreDataObservable(request: request, context: mainContext)
     }
     
-    public func execute<T: Stored>(_ request: FetchRequest<T>) -> Task<[T]> {
+    public func execute<T>(_ request: FetchRequest<T>) -> Task<[T]> {
         let coreDataModelType = checkType(T.self)
         
         let taskCompletionSource = TaskCompletionSource<[T]>()

@@ -27,13 +27,13 @@ public protocol DBClient {
     ///
     /// - Parameter request: request to execute
     /// - Returns: `Task` with array of objects or error in case of failude.
-    func execute<T: Stored>(_ request: FetchRequest<T>) -> Task<[T]>
+    func execute<T>(_ request: FetchRequest<T>) -> Task<[T]>
     
     /// Creates observable request from given `FetchRequest`.
     ///
     /// - Parameter request: fetch request to be observed
     /// - Returns: observable of for given request.
-    func observable<T: Stored>(for request: FetchRequest<T>) -> RequestObservable<T>
+    func observable<T>(for request: FetchRequest<T>) -> RequestObservable<T>
     
     /// Inserts objects to database.
     ///
