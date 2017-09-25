@@ -32,8 +32,8 @@ extension DBClientInjectable {
 
     var dbClient: DBClient {
         get {
-            return DBClientInjector.coreDataClient
-//            return DBClientInjector.realmClient
+//            return DBClientInjector.coreDataClient
+            return DBClientInjector.realmClient
         }
     }
     

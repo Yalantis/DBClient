@@ -15,7 +15,7 @@ class ObjectUser: Object {
         return #keyPath(ObjectUser.id)
     }
 
-    dynamic var id: String = ""
-    dynamic var name: String = ""
+    @objc dynamic var id: String = ""
+    @objc dynamic var name: String = ""
 
 }

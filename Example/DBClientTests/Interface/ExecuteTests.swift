@@ -40,7 +40,7 @@ final class ExecuteTests: DBClientTest {
                 .execute(request)
                 .continueWith { task in
                     guard let users = task.result else {
-                        XCTFail("\(task.error)")
+                        XCTFail(String(describing: task.error))
                         return
                     }
                     
@@ -72,7 +72,7 @@ final class ExecuteTests: DBClientTest {
         let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
         let order: ComparisonResult = sortDescriptor.ascending ? .orderedAscending : .orderedDescending
         
-        let randomUsers = createRandomUsers(10).sorted { $0.0.name.compare($0.1.name) == order }
+        let randomUsers = createRandomUsers(10).sorted { $0.name.compare($1.name) == order }
         
         let request = FetchRequest<User>(sortDescriptor: sortDescriptor)
         execute { expectation in
@@ -113,7 +113,7 @@ final class ExecuteTests: DBClientTest {
         let randomUsers = createRandomUsers(10)
         let offset = 5
         let limit = 2
-        let sortedUsers = randomUsers.sorted { $0.0.name.compare($0.1.name) == order }
+        let sortedUsers = randomUsers.sorted { $0.name.compare($1.name) == order }
         let shiftedUsers = Array(sortedUsers[offset..<offset + limit])
         
         let request = FetchRequest<User>(sortDescriptor: sortDescriptor, fetchOffset: offset, fetchLimit: limit)
@@ -139,7 +139,7 @@ final class ExecuteTests: DBClientTest {
         let offset = 2
         let limit = 5
         var users = randomUsers.filter { $0.id.hasPrefix(arg) }
-        users = users.sorted { $0.0.name.compare($0.1.name) == order }
+        users = users.sorted { $0.name.compare($1.name) == order }
         users = Array(users[offset..<offset + limit])
         
         let request = FetchRequest<User>(
