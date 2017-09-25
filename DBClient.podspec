@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.homepage         = ""
   s.license          = 'MIT'
   s.author           = { "Yalantis" => "mail@yalantis.com" }
-  s.source           = { :git => "https://git.yalantis.com/roman.kyrylenko/DBClient.git" }
+  s.source           = { :git => "https://github.com/Yalantis/DBClient.git", :tag => s.version }
   s.social_media_url = 'https://yalantis.com/'
   s.homepage = 'https://yalantis.com/'
 
