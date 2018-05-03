@@ -6,27 +6,33 @@ PODS:
     - DBClient/Core
   - DBClient/Realm (0.1):
     - DBClient/Core
-    - RealmSwift (~> 2.1.1)
-  - Realm (2.1.2):
-    - Realm/Headers (= 2.1.2)
-  - Realm/Headers (2.1.2)
-  - RealmSwift (2.1.2):
-    - Realm (= 2.1.2)
+    - RealmSwift (~> 2.8.1)
+  - Realm (2.8.3):
+    - Realm/Headers (= 2.8.3)
+  - Realm/Headers (2.8.3)
+  - RealmSwift (2.8.3):
+    - Realm (= 2.8.3)
 
 DEPENDENCIES:
   - DBClient/CoreData (from `../`)
   - DBClient/Realm (from `../`)
 
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - Bolts-Swift
+    - Realm
+    - RealmSwift
+
 EXTERNAL SOURCES:
   DBClient:
-    :path: ../
+    :path: "../"
 
 SPEC CHECKSUMS:
   Bolts-Swift: fa98d1b59fc1acea9b21a21306dcdca1c85e3737
-  DBClient: fcf29df338854a8509d00cad7356ab3190be4006
-  Realm: efe855f4d977c8ce5a82d3116d9f1ff155a6550c
-  RealmSwift: 17d6ee30b6f9df86364408c2197492e33bfea567
+  DBClient: 464c0e9e1c858564657ce8c72ef80409c3b5e79d
+  Realm: 3601ef091c8c499a31101d8563b991e75546cdce
+  RealmSwift: 8183818515471b01a99abdd2970f8e4fd52b6f4a
 
 PODFILE CHECKSUM: 179eda0e5897e0216cdd26b5cd14adae089b4671
 
-COCOAPODS: 1.2.0
+COCOAPODS: 1.5.0

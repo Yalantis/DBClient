@@ -112,7 +112,9 @@ private class FetchedResultsControllerDelegate<T: NSManagedObject>: NSObject, NS
     let inserted = batchChanges.filter { $0.isInsertion }.map { (index: $0.index(), element: $0.object()) }
     let updated = batchChanges.filter { $0.isUpdate }.map { (index: $0.index(), element: $0.object()) }
     
-    observer?(.change(objects: controller.fetchedObjects as? [T] ?? [], deletions: deleted, insertions: inserted, modifications: updated))
+    if let observer = observer {
+      observer(.change(objects: controller.fetchedObjects as? [T] ?? [], deletions: deleted, insertions: inserted, modifications: updated))
+    }
     batchChanges = []
   }
   
