@@ -129,7 +129,9 @@ private class FetchedResultsControllerDelegate<T: NSManagedObject>: NSObject, NS
             insertions: inserted,
             modifications: updated
         )
-        observer?(.change(mappedChange))
+        if let observer = observer {
+            observer(.change(mappedChange))
+        }
         batchChanges = []
     }
     
