@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "DBClient"
-  s.version          = "0.6"
+  s.version          = "0.7"
   s.requires_arc = true
   s.summary          = "CoreData & Realm wrapper written on Swift"
   s.homepage         = ""
@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
 
   s.subspec "Core" do |spec|
 	spec.source_files = ['DBClient/Core/*.swift']
-  	spec.dependency "Bolts-Swift", "~> 1.3.0"
+  	spec.dependency "Bolts-Swift", "~> 1.4"
   	spec.frameworks = ['Foundation']
   end
 
