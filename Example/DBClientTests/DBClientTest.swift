@@ -8,7 +8,6 @@
 
 import XCTest
 import DBClient
-import BoltsSwift
 import RealmSwift
 @testable import Example
 

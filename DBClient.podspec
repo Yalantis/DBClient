@@ -16,7 +16,6 @@ Pod::Spec.new do |s|
 
   s.subspec "Core" do |spec|
 	spec.source_files = ['DBClient/Core/*.swift']
-  	spec.dependency "Bolts-Swift", "~> 1.4"
   	spec.frameworks = ['Foundation']
   end
 

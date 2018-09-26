@@ -44,7 +44,9 @@ class MasterViewController: UITableViewController, DBClientInjectable {
     // MARK: - Actions
     
     @IBAction private func addObject(_ sender: Any) {
-        dbClient.insert(User.createRandom())
+        dbClient.insert(User.createRandom()) { result in
+            print(result)
+        }
     }
     
     private func observeChanges(_ changeSet: ObservableChange<User>) {
@@ -102,7 +104,7 @@ extension MasterViewController {
         }
         
         let user = objects[indexPath.row]
-        dbClient.delete(user)
+        dbClient.delete(user, completion: { _ in })
     }
     
 }

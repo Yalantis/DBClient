@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import BoltsSwift
 import RealmSwift
 
 /// Describes protocol to be implemented by model for `RealmDBClient`
@@ -52,97 +51,84 @@ public class RealmDBClient {
 extension RealmDBClient: DBClient {
     
     /// Executes given request. Fetches all entities and then applies all given restrictions
-    public func execute<T>(_ request: FetchRequest<T>) -> Task<[T]> {
+    public func execute<T>(_ request: FetchRequest<T>, completion: @escaping (Result<[T]>) -> Void) {
         let modelType = checkType(T.self)
-        
-        let taskCompletionSource = TaskCompletionSource<[T]>()
         let neededType = modelType.realmClass()
         let objects = request
             .applyTo(realmObjects: realm.objects(neededType))
             .map { $0 }
             .get(offset: request.fetchOffset, limit: request.fetchLimit)
-            .flatMap { modelType.from($0) as? T }
-        taskCompletionSource.set(result: objects)
+            .compactMap { modelType.from($0) as? T }
         
-        return taskCompletionSource.task
+        completion(.success(objects))
     }
     
     /// Inserts new objects to database. If object with such `primaryKeyValue` already exists Realm'll throw an error
-    public func insert<T: Stored>(_ objects: [T]) -> Task<[T]> {
+    public func insert<T>(_ objects: [T], completion: @escaping (Result<[T]>) -> Void) where T : Stored {
         checkType(T.self)
-        
-        let taskCompletionSource = TaskCompletionSource<[T]>()
-        
-        let realmObjects = objects.flatMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
+
+        let realmObjects = objects.compactMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
+
         do {
             realm.beginWrite()
             realm.add(realmObjects)
             try realm.commitWrite()
-            taskCompletionSource.set(result: objects)
+            completion(.success(objects))
         } catch let error {
-            taskCompletionSource.set(error: error)
+            completion(.failure(error))
         }
-        
-        return taskCompletionSource.task
     }
     
     /// Updates objects which are already in db.
-    public func update<T: Stored>(_ objects: [T]) -> Task<[T]> {
+    public func update<T>(_ objects: [T], completion: @escaping (Result<[T]>) -> Void) where T : Stored {
         checkType(T.self)
-        
-        let taskCompletionSource = TaskCompletionSource<[T]>()
+
         let realmObjects = separate(objects: objects)
             .present
-            .flatMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
+            .compactMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
         do {
             realm.beginWrite()
             realm.add(realmObjects, update: true)
             try realm.commitWrite()
-            taskCompletionSource.set(result: objects)
+            
+            completion(.success(objects))
         } catch let error {
-            taskCompletionSource.set(error: error)
+            completion(.failure(error))
         }
-        
-        return taskCompletionSource.task
     }
     
     /// Removes objects by it `primaryKeyValue`s
-    public func delete<T: Stored>(_ objects: [T]) -> Task<Void> {
+    public func delete<T>(_ objects: [T], completion: @escaping (Result<()>) -> Void) where T : Stored {
         let type = checkType(T.self)
-        
-        let taskCompletionSource = TaskCompletionSource<Void>()
+
         let realmType = type.realmClass()
         
         do {
-            let primaryValues = objects.flatMap { $0.valueOfPrimaryKey }
-            let realmObjects = primaryValues.flatMap { realm.object(ofType: realmType, forPrimaryKey: $0) }
+            let primaryValues = objects.compactMap { $0.valueOfPrimaryKey }
+            let realmObjects = primaryValues.compactMap { realm.object(ofType: realmType, forPrimaryKey: $0) }
             realm.beginWrite()
             realm.delete(realmObjects)
             try realm.commitWrite()
-            taskCompletionSource.set(result: ())
+            
+            completion(.success(()))
         } catch let error {
-            taskCompletionSource.set(error: error)
+            completion(.failure(error))
         }
-        
-        return taskCompletionSource.task
     }
-    
-    public func upsert<T : Stored>(_ objects: [T]) -> Task<(updated: [T], inserted: [T])> {
+
+    public func upsert<T>(_ objects: [T], completion: @escaping (Result<(updated: [T], inserted: [T])>) -> Void) where T : Stored {
         checkType(T.self)
-        
-        let taskCompletionSource = TaskCompletionSource<(updated: [T], inserted: [T])>()
+
         let separatedObjects = separate(objects: objects)
-        let realmObjects = objects.flatMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
+        let realmObjects = objects.compactMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
         do {
             realm.beginWrite()
             realm.add(realmObjects, update: true)
             try realm.commitWrite()
-            taskCompletionSource.set(result: (updated: separatedObjects.present, inserted: separatedObjects.new))
+            completion(.success((updated: separatedObjects.present, inserted: separatedObjects.new)))
         } catch let error {
-            taskCompletionSource.set(error: error)
+            completion(.failure(error))
         }
-        
-        return taskCompletionSource.task
     }
     
     public func observable<T>(for request: FetchRequest<T>) -> RequestObservable<T> {
@@ -223,7 +209,7 @@ private extension Array {
             lim = offset + limit
         }
         
-        return (off..<lim).flatMap { self[$0] as? T }
+        return (off..<lim).compactMap { self[$0] as? T }
     }
     
 }
