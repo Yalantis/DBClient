@@ -13,4 +13,3 @@ import CoreData
 public class ManagedUser: NSManagedObject {
 
 }
-

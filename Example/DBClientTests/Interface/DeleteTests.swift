@@ -16,14 +16,14 @@ final class DeleteTests: DBClientTest {
         let expectationHit = expectation(description: "Object")
         var isDeleted = false
         
-        self.dbClient.insert(randomUser, completion: { result in
+        self.dbClient.insert(randomUser) { result in
             if let object = result.value {
-                self.dbClient.delete(object, completion: { result in
+                self.dbClient.delete(object) { result in
                     isDeleted = result.value != nil
                     expectationHit.fulfill()
-                })
+                }
             }
-        })
+        }
         
         waitForExpectations(timeout: 1) { _ in
             XCTAssert(isDeleted)
@@ -35,14 +35,14 @@ final class DeleteTests: DBClientTest {
         let expectationHit = expectation(description: "Object")
         var isDeleted = false
         
-        self.dbClient.insert(randomUsers, completion: { result in
+        self.dbClient.insert(randomUsers) { result in
             if let objects = result.value {
-                self.dbClient.delete(objects, completion: { result in
+                self.dbClient.delete(objects) { result in
                     isDeleted = result.value != nil
                     expectationHit.fulfill()
-                })
+                }
             }
-        })
+        }
         
         waitForExpectations(timeout: 1) { _ in
             XCTAssert(isDeleted)

@@ -54,7 +54,7 @@ final class ObservableTests: DBClientTest {
         }
         
         dbClient.insert(objectsToCreate) { _ in
-            self.dbClient.update(objectsToCreate, completion: { _ in })
+            self.dbClient.update(objectsToCreate) { _ in }
         }
         
         waitForExpectations(timeout: 1) { _ in
@@ -81,7 +81,7 @@ final class ObservableTests: DBClientTest {
         }
         
         dbClient.insert(objectsToCreate) { _ in
-            self.dbClient.delete(objectsToCreate, completion: { _ in })
+            self.dbClient.delete(objectsToCreate) { _ in }
         }
         
         waitForExpectations(timeout: 1) { _ in

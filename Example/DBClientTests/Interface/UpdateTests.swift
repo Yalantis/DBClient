@@ -16,13 +16,13 @@ final class UpdateTests: DBClientTest {
         let expectationObject = expectation(description: "Object")
         var expectedUser: User?
         
-        self.dbClient.insert(randomUser, completion: { result in
+        self.dbClient.insert(randomUser) { result in
             randomUser.name = "Bob"
-            self.dbClient.update(randomUser, completion: { result in
+            self.dbClient.update(randomUser) { result in
                 expectedUser = result.value
                 expectationObject.fulfill()
-            })
-        })
+            }
+        }
         
         waitForExpectations(timeout: 1) { _ in
             XCTAssertEqual(expectedUser?.name, "Bob")

@@ -53,10 +53,10 @@ class DBClientTest: XCTestCase {
         
         dbClient.findAll { (result: Result<[User]>) in
             if let objects = result.value {
-                self.dbClient.delete(objects, completion: { result in
+                self.dbClient.delete(objects) { _ in
                     isDeleted = true
                     expectationDeleletion.fulfill()
-                })
+                }
             }
         }
         

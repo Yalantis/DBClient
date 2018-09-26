@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.social_media_url = 'https://yalantis.com/'
   s.homepage = 'https://yalantis.com/'
 
-  s.ios.deployment_target = "9.0"
+  s.ios.deployment_target = "10.0"
 
   s.default_subspec = "Core"
 

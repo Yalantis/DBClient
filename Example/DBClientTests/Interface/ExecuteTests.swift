@@ -17,15 +17,15 @@ final class ExecuteTests: DBClientTest {
         let expectationObject = expectation(description: "Object")
         var expectedCount = 0
         
-        self.dbClient.insert(randomUser, completion: { result in
-            if let _ = result.value {
+        self.dbClient.insert(randomUser) { result in
+            if result.value != nil {
                 let request = FetchRequest<User>()
-                self.dbClient.execute(request, completion: { result in
+                self.dbClient.execute(request) { result in
                     expectedCount = result.value?.count ?? 0
                     expectationObject.fulfill()
-                })
+                }
             }
-        })
+        }
         
         waitForExpectations(timeout: 1) { _ in
             XCTAssertEqual(expectedCount, 1)
@@ -39,15 +39,15 @@ final class ExecuteTests: DBClientTest {
         let expectationObjects = expectation(description: "Object")
         var expectedCount = 0
         
-        self.dbClient.insert(randomUsers, completion: { result in
-            if let _ = result.value {
+        self.dbClient.insert(randomUsers) { result in
+            if result.value != nil {
                 let request = FetchRequest<User>(fetchOffset: offset)
-                self.dbClient.execute(request, completion: { result in
+                self.dbClient.execute(request) { result in
                     expectedCount = result.value?.count ?? 0
                     expectationObjects.fulfill()
-                })
+                }
             }
-        })
+        }
         
         waitForExpectations(timeout: 1) { _ in
             XCTAssertEqual(expectedCount, shiftedUsers.count)
@@ -61,15 +61,15 @@ final class ExecuteTests: DBClientTest {
         let expectationObjects = expectation(description: "Object")
         var expectedCount = 0
         
-        self.dbClient.insert(randomUsers, completion: { result in
-            if let _ = result.value {
+        self.dbClient.insert(randomUsers) { result in
+            if result.value != nil {
                 let request = FetchRequest<User>(fetchLimit: limit)
-                self.dbClient.execute(request, completion: { result in
+                self.dbClient.execute(request) { result in
                     expectedCount = result.value?.count ?? 0
                     expectationObjects.fulfill()
-                })
+                }
             }
-        })
+        }
         
         waitForExpectations(timeout: 1) { _ in
             XCTAssertEqual(expectedCount, limit)
@@ -84,16 +84,16 @@ final class ExecuteTests: DBClientTest {
         let expectationObjects = expectation(description: "Object")
         var expectedUsers = [User]()
         
-        self.dbClient.insert(randomUsers, completion: { result in
-            if let _ = result.value {
+        self.dbClient.insert(randomUsers) { result in
+            if result.value != nil {
                 let request = FetchRequest<User>(sortDescriptor: sortDescriptor)
                 
-                self.dbClient.execute(request, completion: { result in
+                self.dbClient.execute(request) { result in
                     expectedUsers = result.value ?? []
                     expectationObjects.fulfill()
-                })
+                }
             }
-        })
+        }
         
         waitForExpectations(timeout: 1) { _ in
             XCTAssertEqual(expectedUsers, sortedUsers)
@@ -110,16 +110,16 @@ final class ExecuteTests: DBClientTest {
         let expectationObjects = expectation(description: "Object")
         var expectedUsers = [User]()
         
-        self.dbClient.insert(randomUsers, completion: { result in
-            if let _ = result.value {
+        self.dbClient.insert(randomUsers) { result in
+            if result.value != nil {
                 let request = FetchRequest<User>(predicate: predicate)
 
-                self.dbClient.execute(request, completion: { result in
+                self.dbClient.execute(request) { result in
                     expectedUsers = result.value ?? []
                     expectationObjects.fulfill()
-                })
+                }
             }
-        })
+        }
         
         waitForExpectations(timeout: 1) { _ in
             XCTAssertEqual(expectedUsers, preicatedUsers)

@@ -16,10 +16,10 @@ final class CreateTests: DBClientTest {
         let expectationObject = expectation(description: "Object")
         var expectedObject: User?
         
-        self.dbClient.insert(randomUser, completion: { result in
+        self.dbClient.insert(randomUser) { result in
             expectedObject = result.value
             expectationObject.fulfill()
-        })
+        }
         
         waitForExpectations(timeout: 1) { _ in
             XCTAssertNotNil(expectedObject)
@@ -32,10 +32,10 @@ final class CreateTests: DBClientTest {
         let expectationObjects = expectation(description: "Objects")
         var expectedObjectsCount = 0
 
-        self.dbClient.insert(randomUsers, completion: { result in
+        self.dbClient.insert(randomUsers) { result in
             expectedObjectsCount = result.value?.count ?? 0
             expectationObjects.fulfill()
-        })
+        }
 
         waitForExpectations(timeout: 1) { _ in
             XCTAssertEqual(expectedObjectsCount, randomUsers.count)
@@ -43,4 +43,3 @@ final class CreateTests: DBClientTest {
     }
 
 }
-

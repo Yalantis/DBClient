@@ -18,12 +18,12 @@ class FetchTests: DBClientTest {
         let expectationObject = expectation(description: "Object")
         var expectedObject: User?
         
-        self.dbClient.insert(randomUser, completion: { result in
-            self.dbClient.findFirst(User.self, primaryValue: randomUser.id, completion: { result in
+        self.dbClient.insert(randomUser) { result in
+            self.dbClient.findFirst(User.self, primaryValue: randomUser.id) { result in
                 expectedObject = result.require()
                 expectationObject.fulfill()
-            })
-        })
+            }
+        }
         
         waitForExpectations(timeout: 5) { _ in
             XCTAssertNotNil(expectedObject)
@@ -36,12 +36,12 @@ class FetchTests: DBClientTest {
         let expectationObjects = expectation(description: "Objects")
         var expectedObjectsCount = 0
         
-        self.dbClient.insert(randomUsers, completion: { result in
+        self.dbClient.insert(randomUsers) { result in
             self.dbClient.findAll { (result: Result<[User]>) in
                 expectedObjectsCount = result.value?.count ?? 0
                 expectationObjects.fulfill()
             }
-        })
+        }
         
         waitForExpectations(timeout: 1) { _ in
             XCTAssertEqual(expectedObjectsCount, randomUsers.count)
