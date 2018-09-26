@@ -104,7 +104,7 @@ public extension DBClient {
         let request = FetchRequest<T>(predicate: fetchPredicate, fetchLimit: 1)
         
         execute(request) { result in
-            result.map({ $0.first })
+            completion(result.map({ $0.first }))
         }
     }
     
@@ -113,8 +113,8 @@ public extension DBClient {
     /// - Parameters:
     ///   - object: object to be inserted
     ///   - completion: `Result` with inserted object or appropriate error in case of failure.
-    func insert<T: Stored>(_ object: T, completion: @escaping (Result<T>) -> Void) { 
-        insert([object], completion: { $0.next(self.convertArrayTaskToSingleObject) })
+    func insert<T: Stored>(_ object: T, completion: @escaping (Result<T>) -> Void) {
+        insert([object], completion: { completion($0.next(self.convertArrayTaskToSingleObject)) })
     }
     
     /// Updates changed performed with object to database.
@@ -123,7 +123,7 @@ public extension DBClient {
     ///   - object: object to be updated
     ///   - completion: `Result` with updated object or appropriate error in case of failure.
     func update<T: Stored>(_ object: T, completion: @escaping (Result<T>) -> Void) {
-        update([object], completion: { $0.next(self.convertArrayTaskToSingleObject) })
+        update([object], completion: { completion($0.next(self.convertArrayTaskToSingleObject)) })
     }
     
     /// Deletes object from database.

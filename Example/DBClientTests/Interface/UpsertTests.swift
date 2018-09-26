@@ -7,26 +7,26 @@
 //
 
 import XCTest
-import BoltsSwift
 @testable import Example
 
 final class UpsertTests: DBClientTest {
     
-    func testUpsert() {
-        let savedUsers = createRandomUsers(10)
+    func test_UpsertUsers_WhenSuccessful_ReturnsUpsertedUsers() {        
         let newUsers: [User] = (0...5).map { _ in User.createRandom() }
-        var combinedUsers = savedUsers
-        combinedUsers.append(contentsOf: newUsers)
+        let savedUsers: [User] = (0...5).map { _ in User.createRandom() }
+        let expectationObjects = expectation(description: "Object")
+        var expectedUsers = [User]()
+        let combinedUsers = savedUsers + newUsers
+
+        self.dbClient.insert(savedUsers) { _ in
+            self.dbClient.upsert(combinedUsers, completion: { result in
+                expectedUsers = result.require().updated + result.require().inserted
+                expectationObjects.fulfill()
+            })
+        }
         
-        execute { expectation in
-            self.dbClient
-                .upsert(combinedUsers)
-                .continueOnSuccessWith { upsertions in
-                    XCTAssertEqual(savedUsers.sorted(), upsertions.updated.sorted())
-                    XCTAssertEqual(newUsers.sorted(), upsertions.inserted.sorted())
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertEqual(expectedUsers, combinedUsers)
         }
     }
     

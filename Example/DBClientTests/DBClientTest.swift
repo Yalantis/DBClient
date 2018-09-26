@@ -33,28 +33,6 @@ class DBClientTest: XCTestCase {
         }
     }()
     
-    var expectationTimeout: TimeInterval {
-        return 25
-    }
-    
-    // execute given closure asynchronously with expectation
-    func execute(_ closure: @escaping (XCTestExpectation) -> ()) {
-        let exp = expectation(description: "DBClientTestExpectation")
-        switch storageType {
-        // because realm transactions should be perfomrmed in the same thread where realm created
-        case .realm:
-            closure(exp)
-            
-        default:
-            DispatchQueue.global(qos: .background).async {
-                closure(exp)
-            }
-        }
-        waitForExpectations(timeout: expectationTimeout) { (error) in
-            XCTAssert(error == nil, String(describing: error))
-        }
-    }
-    
     override func setUp() {
         super.setUp()
         
@@ -70,48 +48,21 @@ class DBClientTest: XCTestCase {
     // removes all objects from the database
     func cleanUpDatabase() {
         print("[DBClientTest]: Cleaning database")
-        var count = 0
-        let request: Task<[User]> = dbClient.findAll()
-        execute { (expectation) in
-            request
-                .continueOnSuccessWithTask { users -> Task<Void> in
-                    count = users.count
-                    return self.dbClient.delete(users)
-                }
-                .continueOnSuccessWith { objects in
-                    print("[DBClientTest]: Removed \(count) objects")
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
-    }
-    
-    @discardableResult func createRandomUser() -> User {
-        let randomUser = User.createRandom()
-        execute { expectation in
-            self.dbClient
-                .insert(randomUser)
-                .continueOnSuccessWith { _ in
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
+        let expectationDeleletion = expectation(description: "Deletion")
+        var isDeleted = false
+        
+        dbClient.findAll { (result: Result<[User]>) in
+            if let objects = result.value {
+                self.dbClient.delete(objects, completion: { result in
+                    isDeleted = true
+                    expectationDeleletion.fulfill()
+                })
+            }
         }
         
-        return randomUser
-    }
-    
-    @discardableResult func createRandomUsers(_ count: Int) -> [User] {
-        let randomUsers = (0..<count).map { _ in User.createRandom() }
-        execute { expectation in
-            self.dbClient
-                .insert(randomUsers)
-                .continueOnSuccessWith { _ in
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssert(isDeleted)
         }
-        
-        return randomUsers
     }
     
 }

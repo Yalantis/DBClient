@@ -1,137 +1,92 @@
-//
-//  ObservableTests.swift
-//  DBClient-Example
-//
-//  Created by Roman Kyrylenko on 2/13/17.
-//  Copyright © 2017 Yalantis. All rights reserved.
-//
+////
+////  ObservableTests.swift
+////  DBClient-Example
+////
+////  Created by Roman Kyrylenko on 2/13/17.
+////  Copyright © 2017 Yalantis. All rights reserved.
+////
 
-import BoltsSwift
 import XCTest
 import DBClient
 @testable import Example
 
 final class ObservableTests: DBClientTest {
     
-    func testInsertionObservations() {
+    func test_InsertionObservation_WhenSuccessful_InvokesChnages() {
         let request = FetchRequest<User>()
         let observable = dbClient.observable(for: request)
-        
-        let objectsToCreate = 50
+        let objectsToCreate: [User] = (0...100).map { _ in User.createRandom() }
+        let expectationObject = expectation(description: "Object")
+        var expectedInsertedObjects = [User]()
         
         observable.observe { (change: ObservableChange<User>) in
             switch change {
-                
             case .change(let change):
-                XCTAssertEqual(change.insertions.count, objectsToCreate)
-                XCTAssertEqual(change.objects.count, objectsToCreate)
-                
-            case .initial(let objects):
-                XCTAssert(objects.isEmpty)
-                
-            case .error(let error):
-                XCTFail("\(error)")
+                expectedInsertedObjects = change.insertions.map { $0.element }
+                expectationObject.fulfill()
+            default: break
             }
         }
         
-        createRandomUsers(objectsToCreate)
+        dbClient.insert(objectsToCreate) { _ in }
+        
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertEqual(expectedInsertedObjects, objectsToCreate)
+        }
     }
     
-    func testUpdationObservations() {
+    func test_UpdationObservation_WhenSuccessful_InvokesChnages() {
         let request = FetchRequest<User>()
         let observable = dbClient.observable(for: request)
-        
-        let numberOfUsers = 50
-        createRandomUsers(numberOfUsers)
-        let numberOfUsersToUpdate = 10
+        let objectsToCreate: [User] = (0...100).map { _ in User.createRandom() }
+        let expectationObject = expectation(description: "Object")
+        var expectedUpdatedObjects = [User]()
         
         observable.observe { (change: ObservableChange<User>) in
             switch change {
-                
             case .change(let change):
-                XCTAssertEqual(change.objects.count, numberOfUsers)
-                XCTAssertEqual(change.modifications.count, numberOfUsersToUpdate)
-                
-            case .initial(let objects):
-                XCTAssertEqual(objects.count, numberOfUsers)
-                
-            case .error(let error):
-                XCTFail("\(error)")
-            }
-        }
-        
-        execute { expectation in
-            let request = FetchRequest<User>(fetchLimit: numberOfUsersToUpdate)
-            self.dbClient.execute(request)
-                .continueOnSuccessWithTask { users -> Task<[User]> in
-                    return self.dbClient.update(users)
+                if !change.modifications.isEmpty {
+                    expectedUpdatedObjects = change.modifications.map { $0.element }
+                    expectationObject.fulfill()
                 }
-                .continueOnSuccessWith { _ in
-                    expectation.fulfill()
+            default: break
             }
+        }
+        
+        dbClient.insert(objectsToCreate) { _ in
+            self.dbClient.update(objectsToCreate, completion: { _ in })
+        }
+        
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertEqual(expectedUpdatedObjects, objectsToCreate)
         }
     }
     
-    func testDeletionObservations() {
+    func test_DeletionObservation_WhenSuccessful_InvokesChnages() {
         let request = FetchRequest<User>()
         let observable = dbClient.observable(for: request)
-        
-        let numberOfUsers = 50
-        createRandomUsers(numberOfUsers)
-        let numberOfUsersToDelete = 10
+        let objectsToCreate: [User] = (0...100).map { _ in User.createRandom() }
+        let expectationObject = expectation(description: "Object")
+        var expectedDeletedObjectsCount = 0
         
         observable.observe { (change: ObservableChange<User>) in
             switch change {
-                
             case .change(let change):
-                XCTAssertEqual(change.objects.count, numberOfUsers - numberOfUsersToDelete)
-                XCTAssertEqual(change.deletions.count, numberOfUsersToDelete)
-                
-            case .initial(let objects):
-                XCTAssertEqual(objects.count, numberOfUsers)
-                
-            case .error(let error):
-                XCTFail("\(error)")
-            }
-        }
-        
-        execute { expectation in
-            let request = FetchRequest<User>(fetchLimit: numberOfUsersToDelete)
-            self.dbClient.execute(request)
-                .continueOnSuccessWithTask { users -> Task<Void> in
-                    return self.dbClient.delete(users)
+                if !change.deletions.isEmpty {
+                    expectedDeletedObjectsCount = change.deletions.count
+                    expectationObject.fulfill()
                 }
-                .continueOnSuccessWith { _ in
-                    expectation.fulfill()
+            default: break
             }
         }
-    }
-    
-    func testComplexRequestObservations() {
-        let users = createRandomUsers(100)
-        let offset = 5
-        let suffix = "1"
-        let numberOfMatchedUsers = users.filter { $0.id.hasSuffix(suffix) }.count
         
-        let request = FetchRequest<User>(
-            predicate: NSPredicate(format: "SELF.id ENDSWITH %@", suffix),
-            fetchOffset: offset
-        )
-        let observable = dbClient.observable(for: request)
+        dbClient.insert(objectsToCreate) { _ in
+            self.dbClient.delete(objectsToCreate, completion: { _ in })
+        }
         
-        observable.observe { (change: ObservableChange<User>) in
-            switch change {
-                
-            case .change(let change):
-                XCTAssertEqual(numberOfMatchedUsers - offset, change.objects.count)
-                
-            case .initial(let objects):
-                XCTAssertEqual(objects.count, numberOfMatchedUsers - offset)
-                
-            case .error(let error):
-                XCTFail("\(error)")
-            }
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertEqual(expectedDeletedObjectsCount, objectsToCreate.count)
         }
     }
-    
+
 }

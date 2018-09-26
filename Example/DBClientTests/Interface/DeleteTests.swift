@@ -7,73 +7,46 @@
 //
 
 import XCTest
-import BoltsSwift
 @testable import Example
 
 final class DeleteTests: DBClientTest {
     
-    func testSingleDeletion() {
-        let randomUser = createRandomUser()
-        // remove user from db
-        execute { expectation in
-            self.dbClient
-                .delete(randomUser)
-                .continueOnSuccessWith { _ in
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
-        // check if it has been removed
-        execute { expectation in
-            self.dbClient
-                .findFirst(User.self, primaryValue: randomUser.id)
-                .continueOnSuccessWith { user in
-                    XCTAssert(user == nil)
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
-    }
-    
-    func testBulkDeletions() {
-        let randomUsers: [User] = createRandomUsers(100)
-        // remove users from db
-        execute { expectation in
-            self.dbClient
-                .delete(randomUsers)
-                .continueOnSuccessWith { _ in
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
-        // check if they have been removed
-        execute { expectation in
-            let request: Task<[User]> = self.dbClient.findAll()
-            request
-                .continueOnSuccessWith { users in
-                    XCTAssert(users.isEmpty)
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
-    }
-    
-    func testAsyncDeletions() {
-        let randomUsers: [User] = createRandomUsers(100)
+    func test_SingleDeletion_WhenSuccessful_ReturnsNil() {
+        let randomUser = User.createRandom()
+        let expectationHit = expectation(description: "Object")
+        var isDeleted = false
         
-        var tasks: [Task<Void>] = []
-        
-        execute { expectation in
-            for user in randomUsers {
-                tasks.append(self.dbClient.delete(user))
+        self.dbClient.insert(randomUser, completion: { result in
+            if let object = result.value {
+                self.dbClient.delete(object, completion: { result in
+                    isDeleted = result.value != nil
+                    expectationHit.fulfill()
+                })
             }
-            Task.whenAll(tasks)
-                .continueOnSuccessWith { createdTasks in
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
+        })
+        
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssert(isDeleted)
+        }
+    }
+    
+    func test_BulkDeletion_WhenSuccessful_ReturnsNil() {
+        let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
+        let expectationHit = expectation(description: "Object")
+        var isDeleted = false
+        
+        self.dbClient.insert(randomUsers, completion: { result in
+            if let objects = result.value {
+                self.dbClient.delete(objects, completion: { result in
+                    isDeleted = result.value != nil
+                    expectationHit.fulfill()
+                })
+            }
+        })
+        
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssert(isDeleted)
         }
     }
     
 }
-

@@ -7,52 +7,40 @@
 //
 
 import XCTest
-import BoltsSwift
 @testable import Example
 
 final class CreateTests: DBClientTest {
     
-    func testSingleInsertion() {
+    func test_SingleInsertion_WhenSuccessful_ReturnsObject() {
         let randomUser = User.createRandom()
-        execute { expectation in
-            self.dbClient
-                .insert(randomUser)
-                .continueOnSuccessWith { savedUser in
-                    XCTAssertEqual(randomUser, savedUser)
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
+        let expectationObject = expectation(description: "Object")
+        var expectedObject: User?
+        
+        self.dbClient.insert(randomUser, completion: { result in
+            expectedObject = result.value
+            expectationObject.fulfill()
+        })
+        
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertNotNil(expectedObject)
         }
     }
     
-    func testBulkInsertions() {
+    func test_BulkInsertion_WhenSuccessful_ReturnsBulk() {
         let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
-        execute { expectation in
-            self.dbClient
-                .insert(randomUsers)
-                .continueOnSuccessWith { savedUsers in
-                    XCTAssertEqual(randomUsers, savedUsers)
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
-    }
-    
-    func testAsyncInsertions() {
-        let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
-        var tasks: [Task<User>] = []
 
-        execute { expectation in
-            for user in randomUsers {
-                tasks.append(self.dbClient.insert(user))
-            }
-            Task.whenAll(tasks)
-                .continueOnSuccessWith { createdTasks in
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
+        let expectationObjects = expectation(description: "Objects")
+        var expectedObjectsCount = 0
+
+        self.dbClient.insert(randomUsers, completion: { result in
+            expectedObjectsCount = result.value?.count ?? 0
+            expectationObjects.fulfill()
+        })
+
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertEqual(expectedObjectsCount, randomUsers.count)
         }
     }
-    
+
 }
 
