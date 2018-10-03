@@ -12,6 +12,8 @@ Pod::Spec.new do |s|
 
   s.ios.deployment_target = "10.0"
 
+  s.dependency 'YALResult', '1.0'
+  
   s.default_subspec = "Core"
 
   s.subspec "Core" do |spec|

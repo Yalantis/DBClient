@@ -7,6 +7,9 @@
 //
 
 import Foundation
+import YALResult
+
+public typealias Result = YALResult.Result
 
 public enum DBClientError: Error {
     case noPrimaryKey

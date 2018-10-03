@@ -1,15 +1,19 @@
 PODS:
-  - DBClient/Core (0.7)
+  - DBClient/Core (0.7):
+    - YALResult (= 1.0)
   - DBClient/CoreData (0.7):
     - DBClient/Core
+    - YALResult (= 1.0)
   - DBClient/Realm (0.7):
     - DBClient/Core
     - RealmSwift (~> 2.10.1)
+    - YALResult (= 1.0)
   - Realm (2.10.2):
     - Realm/Headers (= 2.10.2)
   - Realm/Headers (2.10.2)
   - RealmSwift (2.10.2):
     - Realm (= 2.10.2)
+  - YALResult (1.0)
 
 DEPENDENCIES:
   - DBClient/CoreData (from `../`)
@@ -19,15 +23,17 @@ SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - Realm
     - RealmSwift
+    - YALResult
 
 EXTERNAL SOURCES:
   DBClient:
     :path: "../"
 
 SPEC CHECKSUMS:
-  DBClient: 0ffb4b6203663236b7d6ea1b75e121e5166a5a26
+  DBClient: f932742894913327efd48fb5312c6746145d9fe5
   Realm: 0ef72b837fb67e9f4b098bac771ddd72c7fdbb69
   RealmSwift: 07a9ae0505091eda6b2ee7c190c3786d6e90a7b0
+  YALResult: 0ce7a5a3b12a4e06b39725cebb86f3e7ea3c9d8e
 
 PODFILE CHECKSUM: 25c038a30b752fe0113957b0d196c0fc91287f73
 
