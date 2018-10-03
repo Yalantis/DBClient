@@ -7,56 +7,44 @@
 //
 
 import Foundation
-import BoltsSwift
 import XCTest
+import DBClient
 @testable import Example
 
 class FetchTests: DBClientTest {
     
-    func testSingleFetch() {
-        let user = createRandomUser()
-        // check if it has been successfully saved
-        execute { expectation in
-            self.dbClient
-                .findFirst(User.self, primaryValue: user.id)
-                .continueOnSuccessWith { fetchedUser in
-                    XCTAssertEqual(user, fetchedUser)
-                    expectation.fulfill()
+    func test_SingleFetch_WhenSuccessful_ReturnsObject() {
+        let randomUser = User.createRandom()
+        let expectationObject = expectation(description: "Object")
+        var expectedObject: User?
+        
+        self.dbClient.insert(randomUser) { result in
+            self.dbClient.findFirst(User.self, primaryValue: randomUser.id) { result in
+                expectedObject = result.require()
+                expectationObject.fulfill()
             }
+        }
+        
+        waitForExpectations(timeout: 5) { _ in
+            XCTAssertNotNil(expectedObject)
         }
     }
     
-    func testBulkFetch() {
-        let randomUsers: [User] = createRandomUsers(10).sorted()
+    func test_BulkFetch_WhenSuccessful_ReturnsBulk() {
+        let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
         
-        // check if generated users have been successfully saved
-        let request: Task<[User]> = dbClient.findAll()
-        execute { expectation in
-            request
-                .continueOnSuccessWith { fetchedUsers in
-                    // use sort to match users order
-                    XCTAssert(randomUsers == fetchedUsers.sorted())
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
-    }
-    
-    func testAsyncFetches() {
-        let randomUsers: [User] = createRandomUsers(100)
-        let userIds: [String] = randomUsers.map { $0.id }
-        var tasks: [Task<User?>] = []
+        let expectationObjects = expectation(description: "Objects")
+        var expectedObjectsCount = 0
         
-        // async fetch them
-        execute { expectation in
-            for userId in userIds {
-                tasks.append(self.dbClient.findFirst(User.self, primaryValue: userId))
+        self.dbClient.insert(randomUsers) { result in
+            self.dbClient.findAll { (result: Result<[User]>) in
+                expectedObjectsCount = result.value?.count ?? 0
+                expectationObjects.fulfill()
             }
-            Task.whenAll(tasks)
-                .continueOnSuccessWith { 
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
+        }
+        
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertEqual(expectedObjectsCount, randomUsers.count)
         }
     }
     

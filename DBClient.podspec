@@ -10,13 +10,14 @@ Pod::Spec.new do |s|
   s.social_media_url = 'https://yalantis.com/'
   s.homepage = 'https://yalantis.com/'
 
-  s.ios.deployment_target = "9.0"
+  s.ios.deployment_target = "10.0"
 
+  s.dependency 'YALResult', '1.0'
+  
   s.default_subspec = "Core"
 
   s.subspec "Core" do |spec|
 	spec.source_files = ['DBClient/Core/*.swift']
-  	spec.dependency "Bolts-Swift", "~> 1.4"
   	spec.frameworks = ['Foundation']
   end
 

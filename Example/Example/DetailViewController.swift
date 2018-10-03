@@ -23,8 +23,8 @@ class DetailViewController: UIViewController, DBClientInjectable {
     
     @IBAction private func saveButtonAction() {
         detailItem.name = userNameTextField.text ?? ""
-        dbClient.update(detailItem).continueOnSuccessWith(.mainThread) { _ in
-            self.navigationController?.popViewController(animated: true)
+        dbClient.update(detailItem) { [weak self] _ in
+            self?.navigationController?.popViewController(animated: true)
         }
     }
     

@@ -7,7 +7,6 @@
 //
 
 import CoreData
-import BoltsSwift
 
 /// Describes type of model for CoreData database client.
 /// Model should conform to CoreDataModelConvertible protocol
@@ -267,35 +266,31 @@ extension CoreDataDBClient: DBClient {
         return CoreDataObservable(request: request, context: mainContext)
     }
     
-    public func execute<T>(_ request: FetchRequest<T>) -> Task<[T]> {
+    public func execute<T>(_ request: FetchRequest<T>, completion: @escaping (Result<[T]>) -> Void) where T : Stored {
         let coreDataModelType = checkType(T.self)
-        
-        let taskCompletionSource = TaskCompletionSource<[T]>()
-        
+
         performReadTask { context in
             let fetchRequest = self.fetchRequest(for: coreDataModelType)
             fetchRequest.predicate = request.predicate
-            fetchRequest.sortDescriptors = [request.sortDescriptor].flatMap { $0 }
+            fetchRequest.sortDescriptors = [request.sortDescriptor].compactMap { $0 }
             fetchRequest.fetchLimit = request.fetchLimit
             fetchRequest.fetchOffset = request.fetchOffset
             do {
                 let result = try context.fetch(fetchRequest) as! [NSManagedObject]
-                let resultModels = result.flatMap { coreDataModelType.from($0) as? T }
-                taskCompletionSource.set(result: resultModels)
+                let resultModels = result.compactMap { coreDataModelType.from($0) as? T }
+                
+                completion(.success(resultModels))
             } catch let error {
-                taskCompletionSource.set(error: error)
+                completion(.failure(error))
             }
         }
-        
-        return taskCompletionSource.task
     }
     
     /// Insert given objects into context and save it
     /// If appropriate object already exists in DB it will be ignored and nothing will be inserted
-    public func insert<T: Stored>(_ objects: [T]) -> Task<[T]> {
+    public func insert<T>(_ objects: [T], completion: @escaping (Result<[T]>) -> Void) where T : Stored {
         checkType(T.self)
-        
-        let taskCompletionSource = TaskCompletionSource<[T]>()
+
         performWriteTask { context, savingClosure in
             var insertedObjects = [T]()
             let foundObjects = self.find(objects: objects, in: context)
@@ -307,23 +302,21 @@ extension CoreDataDBClient: DBClient {
                 _ = object.upsertManagedObject(in: context, existedInstance: nil)
                 insertedObjects.append(object as! T)
             }
-
+            
             do {
                 try savingClosure()
-                taskCompletionSource.set(result: insertedObjects)
+                completion(.success(insertedObjects))
             } catch let error {
-                taskCompletionSource.set(error: error)
+                completion(.failure(error))
             }
         }
-        return taskCompletionSource.task
     }
     
     /// Method to update existed in DB objects
     /// if there is no such object in db nothing will happened
-    public func update<T: Stored>(_ objects: [T]) -> Task<[T]> {
+    public func update<T>(_ objects: [T], completion: @escaping (Result<[T]>) -> Void) where T : Stored {
         checkType(T.self)
-        
-        let taskCompletionSource = TaskCompletionSource<[T]>()
+
         performWriteTask { context, savingClosure in
             var updatedObjects = [T]()
             
@@ -339,19 +332,17 @@ extension CoreDataDBClient: DBClient {
             
             do {
                 try savingClosure()
-                taskCompletionSource.set(result: updatedObjects)
+                completion(.success(updatedObjects))
             } catch let error {
-                taskCompletionSource.set(error: error)
+                completion(.failure(error))
             }
         }
-        return taskCompletionSource.task
     }
     
     /// Update object if it exists or insert new one otherwise
-    public func upsert<T: Stored>(_ objects: [T]) -> Task<(updated: [T], inserted: [T])> {
+    public func upsert<T>(_ objects: [T], completion: @escaping (Result<(updated: [T], inserted: [T])>) -> Void) where T : Stored {
         checkType(T.self)
-        
-        let taskCompletionSource = TaskCompletionSource<(updated: [T], inserted: [T])>()
+
         performWriteTask { context, savingClosure in
             var updatedObjects = [T]()
             var insertedObjects = [T]()
@@ -368,34 +359,29 @@ extension CoreDataDBClient: DBClient {
             
             do {
                 try savingClosure()
-                taskCompletionSource.set(result: (updated: updatedObjects, inserted: insertedObjects))
+                completion(.success((updated: updatedObjects, inserted: insertedObjects)))
             } catch let error {
-                taskCompletionSource.set(error: error)
+                completion(.failure(error))
             }
         }
-        
-        return taskCompletionSource.task
     }
     
     /// For each element in collection:
     /// After all deletes try to save context
-    public func delete<T: Stored>(_ objects: [T]) -> Task<Void> {
+    public func delete<T>(_ objects: [T], completion: @escaping (Result<()>) -> Void) where T : Stored {
         checkType(T.self)
-        
-        let taskCompletionSource = TaskCompletionSource<Void>()
+
         performWriteTask { context, savingClosure in
             let foundObjects = self.find(objects, in: context)
             foundObjects.forEach { context.delete($0) }
             
             do {
                 try savingClosure()
-                taskCompletionSource.set(result: ())
+                completion(.success(()))
             } catch let error {
-                taskCompletionSource.set(error: error)
+                completion(.failure(error))
             }
         }
-        
-        return taskCompletionSource.task
     }
     
 }
@@ -426,7 +412,7 @@ private extension CoreDataDBClient {
             return []
         }
         
-        let ids = objects.flatMap { $0.valueOfPrimaryKey }
+        let ids = objects.compactMap { $0.valueOfPrimaryKey }
         let fetchRequest = self.fetchRequest(for: coreDataModelType)
         fetchRequest.predicate = NSPredicate(format: "\(primaryKeyName) IN %@", ids)
         guard let result = try? context.fetch(fetchRequest), let storedObjects = result as? [NSManagedObject] else {
@@ -459,7 +445,7 @@ private extension CoreDataDBClient {
     func convert<T: Stored>(objects: [T]) -> [CoreDataModelConvertible] {
         checkType(T.self)
         
-        return objects.flatMap { $0 as? CoreDataModelConvertible }
+        return objects.compactMap { $0 as? CoreDataModelConvertible }
     }
     
 }

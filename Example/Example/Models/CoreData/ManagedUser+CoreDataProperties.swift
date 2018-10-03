@@ -11,7 +11,8 @@ import CoreData
 
 extension ManagedUser {
 
-    @nonobjc class func fetchRequest() -> NSFetchRequest<ManagedUser> {
+    @nonobjc
+    class func fetchRequest() -> NSFetchRequest<ManagedUser> {
         return NSFetchRequest<ManagedUser>(entityName: User.entityName)
     }
 

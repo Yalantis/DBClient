@@ -44,7 +44,9 @@ class MasterViewController: UITableViewController, DBClientInjectable {
     // MARK: - Actions
     
     @IBAction private func addObject(_ sender: Any) {
-        dbClient.insert(User.createRandom())
+        dbClient.insert(User.createRandom()) { result in
+            print(result)
+        }
     }
     
     private func observeChanges(_ changeSet: ObservableChange<User>) {
@@ -96,13 +98,13 @@ extension MasterViewController {
         return true
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else {
             return
         }
         
         let user = objects[indexPath.row]
-        dbClient.delete(user)
+        dbClient.delete(user) { _ in }
     }
     
 }

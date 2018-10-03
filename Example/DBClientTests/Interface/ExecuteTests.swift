@@ -7,156 +7,123 @@
 //
 
 import XCTest
-import BoltsSwift
 import DBClient
 @testable import Example
 
 final class ExecuteTests: DBClientTest {
     
-    func testNakedExecute() {
-        let user = createRandomUser()
+    func test_SingleExecute_WhenSuccessful_ReturnsCount() {
+        let randomUser = User.createRandom()
+        let expectationObject = expectation(description: "Object")
+        var expectedCount = 0
         
-        let request = FetchRequest<User>()
-        execute { expectation in
-            self.dbClient
-                .execute(request)
-                .continueOnSuccessWith { users in
-                    XCTAssertEqual(users.count, 1)
-                    XCTAssertEqual(user, users.first!)
-                    expectation.fulfill()
+        self.dbClient.insert(randomUser) { result in
+            if result.value != nil {
+                let request = FetchRequest<User>()
+                self.dbClient.execute(request) { result in
+                    expectedCount = result.value?.count ?? 0
+                    expectationObject.fulfill()
                 }
-                .waitUntilCompleted()
+            }
+        }
+        
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertEqual(expectedCount, 1)
         }
     }
     
-    func testOffset() {
-        let randomUsers = createRandomUsers(10)
+    func test_ExecuteWithOffset_WhenSuccessful_ReturnsCount() {
+        let randomUsers: [User] = (0...10).map { _ in User.createRandom() }
         let offset = 5
         let shiftedUsers = Array(randomUsers[offset..<randomUsers.count])
+        let expectationObjects = expectation(description: "Object")
+        var expectedCount = 0
         
-        let request = FetchRequest<User>(fetchOffset: offset)
-        execute { expectation in
-            self.dbClient
-                .execute(request)
-                .continueWith { task in
-                    guard let users = task.result else {
-                        XCTFail(String(describing: task.error))
-                        return
-                    }
-                    
-                    // check only count of arrays beacause we haven't specified sorting
-                    XCTAssertEqual(shiftedUsers.count, users.count)
-                    expectation.fulfill()
+        self.dbClient.insert(randomUsers) { result in
+            if result.value != nil {
+                let request = FetchRequest<User>(fetchOffset: offset)
+                self.dbClient.execute(request) { result in
+                    expectedCount = result.value?.count ?? 0
+                    expectationObjects.fulfill()
                 }
-                .waitUntilCompleted()
+            }
+        }
+        
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertEqual(expectedCount, shiftedUsers.count)
         }
     }
     
-    func testLimit() {
-        createRandomUsers(10)
+    func test_ExecuteWithLimit_WhenSuccessful_ReturnsCount() {
+        let randomUsers: [User] = (0...10).map { _ in User.createRandom() }
         let limit = 3
+
+        let expectationObjects = expectation(description: "Object")
+        var expectedCount = 0
         
-        let request = FetchRequest<User>(fetchLimit: limit)
-        execute { expectation in
-            self.dbClient
-                .execute(request)
-                .continueOnSuccessWith { users in
-                    XCTAssertEqual(limit, users.count)
-                    expectation.fulfill()
+        self.dbClient.insert(randomUsers) { result in
+            if result.value != nil {
+                let request = FetchRequest<User>(fetchLimit: limit)
+                self.dbClient.execute(request) { result in
+                    expectedCount = result.value?.count ?? 0
+                    expectationObjects.fulfill()
                 }
-                .waitUntilCompleted()
+            }
+        }
+        
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertEqual(expectedCount, limit)
         }
     }
     
-    func testOrder() {
+    func test_ExecuteWithSortDescriptor_WhenSuccessful_ReturnsCount() {
         let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
         let order: ComparisonResult = sortDescriptor.ascending ? .orderedAscending : .orderedDescending
+        let randomUsers: [User] = (0...10).map { _ in User.createRandom() }
+        let sortedUsers = randomUsers.sorted { $0.name.compare($1.name) == order }
+        let expectationObjects = expectation(description: "Object")
+        var expectedUsers = [User]()
         
-        let randomUsers = createRandomUsers(10).sorted { $0.name.compare($1.name) == order }
-        
-        let request = FetchRequest<User>(sortDescriptor: sortDescriptor)
-        execute { expectation in
-            self.dbClient
-                .execute(request)
-                .continueOnSuccessWith { users in
-                    XCTAssertEqual(randomUsers, users)
-                    expectation.fulfill()
+        self.dbClient.insert(randomUsers) { result in
+            if result.value != nil {
+                let request = FetchRequest<User>(sortDescriptor: sortDescriptor)
+                
+                self.dbClient.execute(request) { result in
+                    expectedUsers = result.value ?? []
+                    expectationObjects.fulfill()
                 }
-                .waitUntilCompleted()
+            }
+        }
+        
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertEqual(expectedUsers, sortedUsers)
         }
     }
     
-    func testPredicate() {
+    func test_ExecuteWithPredicate_WhenSuccessful_ReturnsCount() {
         let arg = "1"
         let predicate = NSPredicate(format: "SELF.id ENDSWITH %@", arg)
+        let randomUsers: [User] = (0...10).map { _ in User.createRandom() }
+        let preicatedUsers = randomUsers.filter {
+                $0.id.hasSuffix(arg)
+        }
+        let expectationObjects = expectation(description: "Object")
+        var expectedUsers = [User]()
+        
+        self.dbClient.insert(randomUsers) { result in
+            if result.value != nil {
+                let request = FetchRequest<User>(predicate: predicate)
 
-        let randomUsers = createRandomUsers(10).filter {
-            $0.id.hasSuffix(arg)
+                self.dbClient.execute(request) { result in
+                    expectedUsers = result.value ?? []
+                    expectationObjects.fulfill()
+                }
+            }
         }
         
-        let request = FetchRequest<User>(predicate: predicate)
-        execute { expectation in
-            self.dbClient
-                .execute(request)
-                .continueOnSuccessWith { users in
-                    XCTAssertEqual(randomUsers, users)
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertEqual(expectedUsers, preicatedUsers)
         }
     }
-    
-    func testOffsetWithOrder() {
-        let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
-        let order: ComparisonResult = sortDescriptor.ascending ? .orderedAscending : .orderedDescending
 
-        let randomUsers = createRandomUsers(10)
-        let offset = 5
-        let limit = 2
-        let sortedUsers = randomUsers.sorted { $0.name.compare($1.name) == order }
-        let shiftedUsers = Array(sortedUsers[offset..<offset + limit])
-        
-        let request = FetchRequest<User>(sortDescriptor: sortDescriptor, fetchOffset: offset, fetchLimit: limit)
-        execute { expectation in
-            self.dbClient
-                .execute(request)
-                .continueOnSuccessWith { users in
-                    XCTAssertEqual(shiftedUsers, users)
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
-    }
-    
-    func testCombinedRequest() {
-        let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
-        let order: ComparisonResult = sortDescriptor.ascending ? .orderedAscending : .orderedDescending
-
-        let arg = "1"
-        let predicate = NSPredicate(format: "SELF.id BEGINSWITH %@", arg)
-
-        let randomUsers = createRandomUsers(50)
-        let offset = 2
-        let limit = 5
-        var users = randomUsers.filter { $0.id.hasPrefix(arg) }
-        users = users.sorted { $0.name.compare($1.name) == order }
-        users = Array(users[offset..<offset + limit])
-        
-        let request = FetchRequest<User>(
-            predicate: predicate,
-            sortDescriptor: sortDescriptor,
-            fetchOffset: offset,
-            fetchLimit: limit
-        )
-        execute { expectation in
-            self.dbClient
-                .execute(request)
-                .continueOnSuccessWith { fetchedUsers in
-                    XCTAssertEqual(users, fetchedUsers)
-                    expectation.fulfill()
-                }
-                .waitUntilCompleted()
-        }
-    }
-    
 }
