@@ -4,7 +4,7 @@ Pod::Spec.new do |s|
   s.requires_arc = true
   s.summary          = "CoreData & Realm wrapper written on Swift"
   s.homepage         = ""
-  s.license          = 'MIT'
+  s.license          = { :type => "MIT", :file => "LICENSE" }
   s.author           = { "Yalantis" => "mail@yalantis.com" }
   s.source           = { :git => "https://github.com/Yalantis/DBClient.git", :tag => s.version }
   s.social_media_url = 'https://yalantis.com/'
