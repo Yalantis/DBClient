@@ -400,6 +400,7 @@ extension CoreDataDBClient: DBClient {
         }
     }
     
+    @discardableResult
     public func insert<T: Stored>(_ objects: [T]) -> Result<[T]> {
         checkType(T.self)
         
@@ -428,6 +429,7 @@ extension CoreDataDBClient: DBClient {
         return result
     }
     
+    @discardableResult
     public func update<T: Stored>(_ objects: [T]) -> Result<[T]> {
         checkType(T.self)
         
@@ -457,6 +459,7 @@ extension CoreDataDBClient: DBClient {
         return result
     }
     
+    @discardableResult
     public func delete<T: Stored>(_ objects: [T]) -> Result<()> {
         checkType(T.self)
         
@@ -477,6 +480,7 @@ extension CoreDataDBClient: DBClient {
         return result
     }
     
+    @discardableResult
     public func upsert<T : Stored>(_ objects: [T]) -> Result<(updated: [T], inserted: [T])> {
         checkType(T.self)
         

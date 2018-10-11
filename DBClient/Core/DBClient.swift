@@ -77,6 +77,7 @@ public protocol DBClient {
     /// - Parameters:
     ///   - objects: list of objects to be inserted
     /// - Returns: `Result` with inserted objects or appropriate error in case of failure.
+    @discardableResult
     func insert<T: Stored>(_ objects: [T]) -> Result<[T]>
     
     /// Synchronously updates changed performed with objects to database.
@@ -84,6 +85,7 @@ public protocol DBClient {
     /// - Parameters:
     ///   - objects: list of objects to be updated
     /// - Returns: `Result` with updated objects or appropriate error in case of failure.
+    @discardableResult
     func update<T: Stored>(_ objects: [T]) -> Result<[T]>
     
     /// Synchronously deletes objects from database.
@@ -91,6 +93,7 @@ public protocol DBClient {
     /// - Parameters:
     ///   - objects: list of objects to be deleted
     /// - Returns: `Result` with appropriate error in case of failure.
+    @discardableResult
     func delete<T: Stored>(_ objects: [T]) -> Result<()>
     
     /// Synchronously iterates through given objects and updates existing in database instances or creates them
@@ -98,6 +101,7 @@ public protocol DBClient {
     /// - Parameters:
     ///   - objects: objects to be worked with
     /// - Returns: `Result` with inserted and updated instances.
+    @discardableResult
     func upsert<T : Stored>(_ objects: [T]) -> Result<(updated: [T], inserted: [T])>
     
 }

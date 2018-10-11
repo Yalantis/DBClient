@@ -137,6 +137,7 @@ extension RealmDBClient: DBClient {
         return RealmObservable(request: request, realm: realm)
     }
     
+    @discardableResult
     public func insert<T: Stored>(_ objects: [T]) -> Result<[T]> {
         checkType(T.self)
         
@@ -152,6 +153,7 @@ extension RealmDBClient: DBClient {
         }
     }
     
+    @discardableResult
     public func update<T: Stored>(_ objects: [T]) -> Result<[T]> {
         checkType(T.self)
         
@@ -169,6 +171,7 @@ extension RealmDBClient: DBClient {
         }
     }
     
+    @discardableResult
     public func delete<T: Stored>(_ objects: [T]) -> Result<()> {
         let type = checkType(T.self)
         
@@ -187,6 +190,7 @@ extension RealmDBClient: DBClient {
         }
     }
     
+    @discardableResult
     public func upsert<T : Stored>(_ objects: [T]) -> Result<(updated: [T], inserted: [T])> {
         checkType(T.self)
         
