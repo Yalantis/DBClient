@@ -256,6 +256,22 @@ public class CoreDataDBClient {
         }
     }
     
+    fileprivate func performWriteTaskAndWait(_ closure: @escaping (NSManagedObjectContext, (() throws -> ())) -> ()) {
+        let context = writeManagedContext
+        context.performAndWait {
+            closure(context) {
+                try context.save(includingParent: true)
+            }
+        }
+    }
+    
+    fileprivate func performReadTaskAndWait(closure: @escaping (NSManagedObjectContext) -> ()) {
+        let context = readManagedContext
+        context.performAndWait {
+            closure(context)
+        }
+    }
+    
 }
 
 // MARK: - DBClient methods
@@ -382,6 +398,113 @@ extension CoreDataDBClient: DBClient {
                 completion(.failure(error))
             }
         }
+    }
+    
+    public func insert<T: Stored>(_ objects: [T]) -> Result<[T]> {
+        checkType(T.self)
+        
+        var result: Result<[T]>!
+            
+        performWriteTaskAndWait { context, savingClosure in
+            var insertedObjects = [T]()
+            let foundObjects = self.find(objects: objects, in: context)
+            for (object, storedObject) in foundObjects {
+                if storedObject != nil {
+                    continue
+                }
+                
+                _ = object.upsertManagedObject(in: context, existedInstance: nil)
+                insertedObjects.append(object as! T)
+            }
+            
+            do {
+                try savingClosure()
+                result = .success(insertedObjects)
+            } catch let error {
+                result = .failure(error)
+            }
+        }
+        
+        return result
+    }
+    
+    public func update<T: Stored>(_ objects: [T]) -> Result<[T]> {
+        checkType(T.self)
+        
+        var result: Result<[T]>!
+        
+        performWriteTaskAndWait { context, savingClosure in
+            var updatedObjects = [T]()
+            
+            let foundObjects = self.find(objects: objects, in: context)
+            for (object, storedObject) in foundObjects {
+                guard let storedObject = storedObject else {
+                    continue
+                }
+                
+                _ = object.upsertManagedObject(in: context, existedInstance: storedObject)
+                updatedObjects.append(object as! T)
+            }
+            
+            do {
+                try savingClosure()
+                result = .success(updatedObjects)
+            } catch let error {
+                result = .failure(error)
+            }
+        }
+        
+        return result
+    }
+    
+    public func delete<T: Stored>(_ objects: [T]) -> Result<()> {
+        checkType(T.self)
+        
+        var result: Result<()>!
+        
+        performWriteTask { context, savingClosure in
+            let foundObjects = self.find(objects, in: context)
+            foundObjects.forEach { context.delete($0) }
+            
+            do {
+                try savingClosure()
+                result = .success(())
+            } catch let error {
+                result = completion(.failure(error)
+            }
+        }
+        
+        return result
+    }
+    
+    public func upsert<T : Stored>(_ objects: [T]) -> Result<(updated: [T], inserted: [T])> {
+        checkType(T.self)
+        
+        var result: Result<(updated: [T], inserted: [T])>!
+        
+        performWriteTaskAndWait { context, savingClosure in
+            var updatedObjects = [T]()
+            var insertedObjects = [T]()
+            let foundObjects = self.find(objects: objects, in: context)
+            
+            for (object, storedObject) in foundObjects {
+                _ = object.upsertManagedObject(in: context, existedInstance: storedObject)
+                if storedObject == nil {
+                    insertedObjects.append(object as! T)
+                } else {
+                    updatedObjects.append(object as! T)
+                }
+            }
+            
+            do {
+                try savingClosure()
+                result = .success((updated: updatedObjects, inserted: insertedObjects))
+            } catch let error {
+                result = .failure(error)
+            }
+        }
+        
+        return result
     }
     
 }

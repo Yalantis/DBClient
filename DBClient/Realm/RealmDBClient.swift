@@ -137,6 +137,71 @@ extension RealmDBClient: DBClient {
         return RealmObservable(request: request, realm: realm)
     }
     
+    public func insert<T: Stored>(_ objects: [T]) -> Result<[T]> {
+        checkType(T.self)
+        
+        let realmObjects = objects.compactMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
+        
+        do {
+            realm.beginWrite()
+            realm.add(realmObjects)
+            try realm.commitWrite()
+            return .success(objects)
+        } catch let error {
+            return .failure(error)
+        }
+    }
+    
+    public func update<T: Stored>(_ objects: [T]) -> Result<[T]> {
+        checkType(T.self)
+        
+        let realmObjects = separate(objects: objects)
+            .present
+            .compactMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
+        do {
+            realm.beginWrite()
+            realm.add(realmObjects, update: true)
+            try realm.commitWrite()
+            
+            return .success(objects)
+        } catch let error {
+            return .failure(error)
+        }
+    }
+    
+    public func delete<T: Stored>(_ objects: [T]) -> Result<()> {
+        let type = checkType(T.self)
+        
+        let realmType = type.realmClass()
+        
+        do {
+            let primaryValues = objects.compactMap { $0.valueOfPrimaryKey }
+            let realmObjects = primaryValues.compactMap { realm.object(ofType: realmType, forPrimaryKey: $0) }
+            realm.beginWrite()
+            realm.delete(realmObjects)
+            try realm.commitWrite()
+            
+            return .success(())
+        } catch let error {
+            return .failure(error)
+        }
+    }
+    
+    public func upsert<T : Stored>(_ objects: [T]) -> Result<(updated: [T], inserted: [T])> {
+        checkType(T.self)
+        
+        let separatedObjects = separate(objects: objects)
+        let realmObjects = objects.compactMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
+        do {
+            realm.beginWrite()
+            realm.add(realmObjects, update: true)
+            try realm.commitWrite()
+            return .success((updated: separatedObjects.present, inserted: separatedObjects.new))
+        } catch let error {
+            return .failure(error)
+        }
+    }
+    
 }
 
 private extension RealmDBClient {

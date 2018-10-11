@@ -72,6 +72,34 @@ public protocol DBClient {
     ///   - completion: `Result` with inserted and updated instances.
     func upsert<T : Stored>(_ objects: [T], completion: @escaping (Result<(updated: [T], inserted: [T])>) -> Void)
     
+    /// Synchronously inserts objects to database.
+    ///
+    /// - Parameters:
+    ///   - objects: list of objects to be inserted
+    /// - Returns: `Result` with inserted objects or appropriate error in case of failure.
+    func insert<T: Stored>(_ objects: [T]) -> Result<[T]>
+    
+    /// Synchronously updates changed performed with objects to database.
+    ///
+    /// - Parameters:
+    ///   - objects: list of objects to be updated
+    /// - Returns: `Result` with updated objects or appropriate error in case of failure.
+    func update<T: Stored>(_ objects: [T]) -> Result<[T]>
+    
+    /// Synchronously deletes objects from database.
+    ///
+    /// - Parameters:
+    ///   - objects: list of objects to be deleted
+    /// - Returns: `Result` with appropriate error in case of failure.
+    func delete<T: Stored>(_ objects: [T]) -> Result<()>
+    
+    /// Synchronously iterates through given objects and updates existing in database instances or creates them
+    ///
+    /// - Parameters:
+    ///   - objects: objects to be worked with
+    /// - Returns: `Result` with inserted and updated instances.
+    func upsert<T : Stored>(_ objects: [T]) -> Result<(updated: [T], inserted: [T])>
+    
 }
 
 public extension DBClient {
