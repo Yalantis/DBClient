@@ -470,7 +470,7 @@ extension CoreDataDBClient: DBClient {
                 try savingClosure()
                 result = .success(())
             } catch let error {
-                result = completion(.failure(error)
+                result = .failure(error)
             }
         }
         
