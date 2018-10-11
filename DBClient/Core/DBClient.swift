@@ -72,6 +72,13 @@ public protocol DBClient {
     ///   - completion: `Result` with inserted and updated instances.
     func upsert<T : Stored>(_ objects: [T], completion: @escaping (Result<(updated: [T], inserted: [T])>) -> Void)
     
+    /// Synchronously executes given request and calls completion result wrapped in `Result`.
+    ///
+    /// - Parameters:
+    ///   - request: request to execute
+    /// - Returns: `Result` with array of objects or error in case of failude.
+    func execute<T>(_ request: FetchRequest<T>) -> Result<[T]>
+    
     /// Synchronously inserts objects to database.
     ///
     /// - Parameters:
@@ -115,6 +122,13 @@ public extension DBClient {
         execute(FetchRequest(), completion: completion)
     }
     
+    /// Synchronously fetch all entities from database
+    ///
+    /// - Returns: `Result` with array of objects
+    func findAll<T: Stored>() -> Result<[T]> {
+        return execute(FetchRequest())
+    }
+    
     /// Finds first element with given value as primary.
     /// If no primary key specified for given type, or object with such value doesn't exist returns nil.
     ///
@@ -141,6 +155,32 @@ public extension DBClient {
         execute(request) { result in
             completion(result.map({ $0.first }))
         }
+    }
+    
+    /// Synchronously finds first element with given value as primary.
+    /// If no primary key specified for given type, or object with such value doesn't exist returns nil.
+    ///
+    /// - Parameters:
+    ///   - type: type of object to search for
+    ///   - primaryValue: the value of primary key field to search for
+    ///   - predicate: predicate for request
+    /// - Returns: `Result` with found object or nil
+    func findFirst<T: Stored>(_ type: T.Type, primaryValue: String, predicate: NSPredicate? = nil) -> Result<T?> {
+        guard let primaryKey = type.primaryKeyName else {
+            return .failure(DBClientError.noPrimaryKey)
+        }
+        
+        let primaryKeyPredicate = NSPredicate(format: "\(primaryKey) == %@", primaryValue)
+        let fetchPredicate: NSPredicate
+        if let predicate = predicate {
+            fetchPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [primaryKeyPredicate, predicate])
+        } else {
+            fetchPredicate = primaryKeyPredicate
+        }
+        let request = FetchRequest<T>(predicate: fetchPredicate, fetchLimit: 1)
+        
+        let result = execute(request)
+        return result.map({ $0.first })
     }
     
     /// Inserts object to database.

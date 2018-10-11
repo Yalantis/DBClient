@@ -137,6 +137,18 @@ extension RealmDBClient: DBClient {
         return RealmObservable(request: request, realm: realm)
     }
     
+    public func execute<T>(_ request: FetchRequest<T>) -> Result<[T]> {
+        let modelType = checkType(T.self)
+        let neededType = modelType.realmClass()
+        let objects = request
+            .applyTo(realmObjects: realm.objects(neededType))
+            .map { $0 }
+            .get(offset: request.fetchOffset, limit: request.fetchLimit)
+            .compactMap { modelType.from($0) as? T }
+        
+        return .success(objects)
+    }
+    
     @discardableResult
     public func insert<T: Stored>(_ objects: [T]) -> Result<[T]> {
         checkType(T.self)

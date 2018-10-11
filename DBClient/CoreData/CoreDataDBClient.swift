@@ -400,6 +400,30 @@ extension CoreDataDBClient: DBClient {
         }
     }
     
+    public func execute<T: Stored>(_ request: FetchRequest<T>) -> Result<[T]> {
+        let coreDataModelType = checkType(T.self)
+        
+        var executeResult: Result<[T]>!
+        
+        performReadTaskAndWait { context in
+            let fetchRequest = self.fetchRequest(for: coreDataModelType)
+            fetchRequest.predicate = request.predicate
+            fetchRequest.sortDescriptors = [request.sortDescriptor].compactMap { $0 }
+            fetchRequest.fetchLimit = request.fetchLimit
+            fetchRequest.fetchOffset = request.fetchOffset
+            do {
+                let result = try context.fetch(fetchRequest) as! [NSManagedObject]
+                let resultModels = result.compactMap { coreDataModelType.from($0) as? T }
+                
+                executeResult = .success(resultModels)
+            } catch let error {
+                executeResult = .failure(error)
+            }
+        }
+        
+        return executeResult
+    }
+    
     @discardableResult
     public func insert<T: Stored>(_ objects: [T]) -> Result<[T]> {
         checkType(T.self)
