@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
   s.name             = "DBClient"
-  s.version          = "1.0"
+  s.version          = "1.1"
   s.requires_arc = true
   s.summary          = "CoreData & Realm wrapper written on Swift"
   s.homepage         = ""
-  s.license          = { :type => "MIT", :file => "LICENSE.md" }
+  s.license          = { :type => "MIT", :file => "LICENSE" }
   s.author           = { "Yalantis" => "mail@yalantis.com" }
   s.source           = { :git => "https://github.com/Yalantis/DBClient.git", :tag => s.version }
   s.social_media_url = 'https://yalantis.com/'
