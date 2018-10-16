@@ -35,7 +35,7 @@ internal class RealmObservable<T: Stored>: RequestObservable<T> {
         }
         
         let realmObjects = request.applyTo(realmObjects: realm.objects(realmModelType.realmClass()))
-        notificationToken = realmObjects.addNotificationBlock { changes in
+        notificationToken = realmObjects.observe { changes in
             switch changes {
             case .initial(let initial):
                 let mapped = initial.map { realmModelType.from($0) as! T }
