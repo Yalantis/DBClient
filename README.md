@@ -1,39 +1,67 @@
 # DBClient
 
-## Requirements
+[![cocoapods](https://img.shields.io/badge/pod-1.1-blue.svg)](https://cocoapods.org/pods/DBClient) ![swift](https://img.shields.io/badge/Swift-4.2-orange.svg) ![Platform](http://img.shields.io/badge/platform-iOS-blue.svg?style=flat) [![License](http://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/Yalantis/DBClient/blob/master/LICENSE)
 
-- Xcode 9
-- Swift 4
-- iOS 9+
+## Integration (Cocoapods)
 
-## Installation
+There're three podspecs:
 
-### Cocoapods
+- `DBClient/Core` contain pure (CoreData/Realm-free) interface / types used to abstract from implementation. Use it only in case you're about to provide custom implementation of any available storage types.
+- `DBClient/CoreData` contain CoreData implementation.
+- `DBClient/Realm` contain Realm implementation.
 
-There're 3 podspecs:
+## Usage
 
-Core, common classes for any database:
+Depending on DataBase type you need to create a client:
 
-```ruby
-pod 'DBClient', :git => 'https://github.com/Yalantis/DBClient.git'
+`let client: DBClient = RealmDBClient(realm: realm)`
+or
+`let client: DBClient = CoreDataDBClient(forModel: "Users")`
+
+Base methods (`CRUD`,  `observe`) are the same for each type and could be found documented in [`DBClient.swift`](https://github.com/Yalantis/DBClient/blob/master/DBClient/Core/DBClient.swift)
+
+### Realm
+
+To adopt Realm, you need to provide `RealmModelConvertible` protocol implementation for each model you want to support.
+`extension User: RealmModelConvertible`
+
+The protocol contains three required methods.
+
+The first one provides a  class (decendant of realm's `Object`) to be associated with your model:
+```
+static func realmClass() -> Object.Type {
+    return ObjectUser.self
+}
 ```
 
-Wrapper for CoreData:
+The second one converts abstract realm's `Object` to your model:  
+```
+static func from(_ realmObject: Object) -> Stored {
+    guard let objectUser = realmObject as? ObjectUser else {
+        fatalError("Can't create `User` from \(realmObject)")
+    }
 
-```ruby
-pod 'DBClient/CoreData', :git => 'https://github.com/Yalantis/DBClient.git'
+    return User(id: objectUser.id, name: objectUser.name)
+}
 ```
 
-Wrapper for Realm:
+The last one converts your model to realm's object:
+```
+func toRealmObject() -> Object {
+    let user = ObjectUser()
+    user.id = id
+    user.name = name
 
-```ruby
-pod 'DBClient/Realm', :git => 'https://github.com/Yalantis/DBClient.git'
+    return user
+}
 ```
 
-## Xcode 8 and Swift 3.2 support
+### CoreData
 
-To support old version of DBClient for Xcode 8 and Swift 3.2 need add previous version tag ```ruby 0.4.2 ```:
+TBD
 
-```ruby
-pod 'DBClient', :git => 'https://github.com/Yalantis/DBClient.git', :tag => '0.4.2'
-```
+## Version history
+
+- `1.1` Swift 4.2 support
+- `0.7` Swift 4.0 support
+- `0.4.2`Swift 3.2 support

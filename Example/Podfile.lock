@@ -1,10 +1,10 @@
 PODS:
-  - DBClient/Core (1.0):
+  - DBClient/Core (1.1):
     - YALResult (= 1.0)
-  - DBClient/CoreData (1.0):
+  - DBClient/CoreData (1.1):
     - DBClient/Core
     - YALResult (= 1.0)
-  - DBClient/Realm (1.0):
+  - DBClient/Realm (1.1):
     - DBClient/Core
     - RealmSwift (~> 3.11)
     - YALResult (= 1.0)
@@ -30,7 +30,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  DBClient: 612b814b0b79d6c3018db268408071ee0abeebbc
+  DBClient: 661a375086ae5321cb8ac00dfcb11a301823530e
   Realm: 92f09a102692b96a9a10e9617f214f15c5ab85fc
   RealmSwift: 5f0481cd658bb751c509314b964a35eaa264d2cf
   YALResult: 0ce7a5a3b12a4e06b39725cebb86f3e7ea3c9d8e
