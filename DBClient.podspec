@@ -4,7 +4,7 @@ Pod::Spec.new do |s|
   s.requires_arc = true
   s.summary          = "CoreData & Realm wrapper written on Swift"
   s.homepage         = ""
-  s.license          = { :type => "MIT", :file => "LICENSE" }
+  s.license          = { :type => "MIT", :file => "LICENSE.md" }
   s.author           = { "Yalantis" => "mail@yalantis.com" }
   s.source           = { :git => "https://github.com/Yalantis/DBClient.git", :tag => s.version }
   s.social_media_url = 'https://yalantis.com/'
@@ -18,7 +18,6 @@ Pod::Spec.new do |s|
 
   s.subspec "Core" do |spec|
 	spec.source_files = ['DBClient/Core/*.swift']
-  	spec.frameworks = ['Foundation']
   end
 
   s.subspec "CoreData" do |spec|
@@ -32,5 +31,4 @@ Pod::Spec.new do |s|
     spec.source_files = ['DBClient/Realm/*.swift']
     spec.dependency "RealmSwift", "~> 2.10.1"
   end
-
 end
