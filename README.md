@@ -1,6 +1,6 @@
 # DBClient
 
-[![cocoapods](https://img.shields.io/badge/pod-1.1-blue.svg)](https://cocoapods.org/pods/DBClient) ![swift](https://img.shields.io/badge/Swift-4.2-orange.svg) ![Platform](http://img.shields.io/badge/platform-iOS-blue.svg?style=flat) [![License](http://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/Yalantis/DBClient/blob/master/LICENSE)
+[![cocoapods](https://img.shields.io/cocoapods/v/DBClient.svg)](https://img.shields.io/cocoapods/v/DBClient.svg) ![swift](https://img.shields.io/badge/Swift-4.2-orange.svg) ![Platform](http://img.shields.io/badge/platform-iOS-blue.svg?style=flat) [![License](http://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/Yalantis/DBClient/blob/master/LICENSE)
 
 ## Integration (Cocoapods)
 
