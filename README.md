@@ -13,12 +13,27 @@ There're three podspecs:
 ## Usage
 
 Depending on DataBase type you need to create a client:
-
 `let client: DBClient = RealmDBClient(realm: realm)`
 or
 `let client: DBClient = CoreDataDBClient(forModel: "Users")`
 
 Base methods (`CRUD`,  `observe`) are the same for each type and could be found documented in [`DBClient.swift`](https://github.com/Yalantis/DBClient/blob/master/DBClient/Core/DBClient.swift)
+
+Each model you create required to conform `Stored` protocol with two properties:
+```
+extension User: Stored {
+
+    public static var primaryKeyName: String? {
+        return "id"
+    }
+
+    public var valueOfPrimaryKey: CVarArg? {
+        return id
+    }
+}
+```
+
+For each model you create you need to define associated database model described below.
 
 ### Realm
 
