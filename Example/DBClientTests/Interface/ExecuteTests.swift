@@ -104,20 +104,20 @@ final class ExecuteTests: DBClientTest {
         let arg = "1"
         let predicate = NSPredicate(format: "SELF.id ENDSWITH %@", arg)
         let randomUsers: [User] = (0...10).map { _ in User.createRandom() }
-        let preicatedUsers = randomUsers.filter {
-                $0.id.hasSuffix(arg)
-        }
+        let preicatedUsers = randomUsers.filter { $0.id.hasSuffix(arg) }
         let expectationObjects = expectation(description: "Object")
         var expectedUsers = [User]()
         
         self.dbClient.insert(randomUsers) { result in
-            if result.value != nil {
-                let request = FetchRequest<User>(predicate: predicate)
-
-                self.dbClient.execute(request) { result in
-                    expectedUsers = result.value ?? []
-                    expectationObjects.fulfill()
-                }
+            guard result.value != nil else {
+                expectationObjects.fulfill()
+                return
+            }
+            let request = FetchRequest<User>(predicate: predicate)
+            
+            self.dbClient.execute(request) { result in
+                expectedUsers = result.value ?? []
+                expectationObjects.fulfill()
             }
         }
         

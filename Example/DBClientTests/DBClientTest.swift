@@ -15,27 +15,25 @@ enum StorageType {
     
     case realm
     case coreData
-    
 }
 
-let storageType: StorageType = .realm
+let storageType: StorageType = .coreData
 
 class DBClientTest: XCTestCase {
     
-    lazy var dbClient: DBClient = {
-        switch storageType {
-        case .realm:
-            let realm = try! Realm()
-            return RealmDBClient(realm: realm)
-            
-        case .coreData:
-            return CoreDataDBClient(forModel: "Users")
-        }
-    }()
+    var dbClient: DBClient!
     
     override func setUp() {
         super.setUp()
         
+        switch storageType {
+        case .realm:
+            let realm = try! Realm()
+            dbClient = RealmDBClient(realm: realm)
+            
+        case .coreData:
+            dbClient = CoreDataDBClient(forModel: "Users")
+        }
         cleanUpDatabase()
     }
     
@@ -47,16 +45,17 @@ class DBClientTest: XCTestCase {
     
     // removes all objects from the database
     func cleanUpDatabase() {
-        print("[DBClientTest]: Cleaning database")
         let expectationDeleletion = expectation(description: "Deletion")
         var isDeleted = false
         
         dbClient.findAll { (result: Result<[User]>) in
-            if let objects = result.value {
-                self.dbClient.delete(objects) { _ in
-                    isDeleted = true
-                    expectationDeleletion.fulfill()
-                }
+            guard let objects = result.value else {
+                expectationDeleletion.fulfill()
+                return
+            }
+            self.dbClient.delete(objects) { _ in
+                isDeleted = true
+                expectationDeleletion.fulfill()
             }
         }
         
@@ -64,5 +63,4 @@ class DBClientTest: XCTestCase {
             XCTAssert(isDeleted)
         }
     }
-    
 }

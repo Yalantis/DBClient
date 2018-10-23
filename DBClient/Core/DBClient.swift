@@ -36,6 +36,7 @@ public protocol DBClient {
     ///   - request: request to execute
     ///   - completion: `Result` with array of objects or error in case of failude.
     func execute<T>(_ request: FetchRequest<T>, completion: @escaping (Result<[T]>) -> Void)
+    func execute<T>(_ request: FetchRequest<T>) -> Result<[T]>
     
     /// Creates observable request from given `FetchRequest`.
     ///

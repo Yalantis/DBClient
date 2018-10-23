@@ -23,7 +23,6 @@ public protocol RealmModelConvertible: Stored {
     
     /// Executes backward mapping from `Realm.Object`
     func toRealmObject() -> Object
-    
 }
 
 extension RealmModelConvertible {
@@ -31,7 +30,6 @@ extension RealmModelConvertible {
     func realmClassForInstance() -> Object.Type {
         return Self.realmClass()
     }
-    
 }
 
 /// Implementation of database client for Realm storage type.
@@ -43,7 +41,6 @@ public class RealmDBClient {
     public init(realm: Realm) {
         self.realm = realm
     }
-    
 }
 
 // MARK: DBClient
@@ -52,15 +49,19 @@ extension RealmDBClient: DBClient {
     
     /// Executes given request. Fetches all entities and then applies all given restrictions
     public func execute<T>(_ request: FetchRequest<T>, completion: @escaping (Result<[T]>) -> Void) {
+        completion(execute(request))
+    }
+    
+    public func execute<T>(_ request: FetchRequest<T>) -> Result<[T]> where T : Stored {
         let modelType = checkType(T.self)
         let neededType = modelType.realmClass()
         let objects = request
             .applyTo(realmObjects: realm.objects(neededType))
             .map { $0 }
-            .get(offset: request.fetchOffset, limit: request.fetchLimit)
+            .slice(offset: request.fetchOffset, limit: request.fetchLimit)
             .compactMap { modelType.from($0) as? T }
         
-        completion(.success(objects))
+        return .success(objects)
     }
     
     /// Inserts new objects to database. If object with such `primaryKeyValue` already exists Realm'll throw an error
@@ -136,7 +137,6 @@ extension RealmDBClient: DBClient {
         
         return RealmObservable(request: request, realm: realm)
     }
-    
 }
 
 private extension RealmDBClient {
@@ -174,7 +174,6 @@ private extension RealmDBClient {
         
         return (present: presentObjects, new: notPresentObjects)
     }
-    
 }
 
 internal extension FetchRequest {
@@ -190,12 +189,11 @@ internal extension FetchRequest {
         
         return objects
     }
-    
 }
 
 private extension Array {
     
-    func get<T: Stored>(offset: Int, limit: Int) -> [T] {
+    func slice<T: Stored>(offset: Int, limit: Int) -> [T] {
         var lim = 0
         var off = 0
         let count = self.count
@@ -211,5 +209,4 @@ private extension Array {
         
         return (off..<lim).compactMap { self[$0] as? T }
     }
-    
 }

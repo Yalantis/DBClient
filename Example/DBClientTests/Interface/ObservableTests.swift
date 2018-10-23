@@ -31,7 +31,7 @@ final class ObservableTests: DBClientTest {
         dbClient.insert(objectsToCreate) { _ in }
         
         waitForExpectations(timeout: 1) { _ in
-            XCTAssertEqual(expectedInsertedObjects, objectsToCreate)
+            XCTAssertEqual(expectedInsertedObjects.sorted(), objectsToCreate.sorted())
         }
     }
     
@@ -39,7 +39,7 @@ final class ObservableTests: DBClientTest {
         let request = FetchRequest<User>()
         let observable = dbClient.observable(for: request)
         let objectsToCreate: [User] = (0...100).map { _ in User.createRandom() }
-        let expectationObject = expectation(description: "Object")
+        let expectationObject = expectation(description: "Changes observe")
         var expectedUpdatedObjects = [User]()
         
         observable.observe { (change: ObservableChange<User>) in
@@ -53,12 +53,16 @@ final class ObservableTests: DBClientTest {
             }
         }
         
+        let updateExpectation = expectation(description: "Insert and update")
         dbClient.insert(objectsToCreate) { _ in
-            self.dbClient.update(objectsToCreate) { _ in }
+            objectsToCreate.forEach { $0.mutate() }
+            self.dbClient.update(objectsToCreate) { _ in
+                updateExpectation.fulfill()
+            }
         }
         
         waitForExpectations(timeout: 1) { _ in
-            XCTAssertEqual(expectedUpdatedObjects, objectsToCreate)
+            XCTAssertEqual(expectedUpdatedObjects.sorted(), objectsToCreate.sorted())
         }
     }
     
@@ -88,5 +92,4 @@ final class ObservableTests: DBClientTest {
             XCTAssertEqual(expectedDeletedObjectsCount, objectsToCreate.count)
         }
     }
-
 }
