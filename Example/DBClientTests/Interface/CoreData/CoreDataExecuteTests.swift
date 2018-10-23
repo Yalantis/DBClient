@@ -1,5 +1,5 @@
 //
-//  ExecuteTests.swift
+//  CoreDataExecuteTests.swift
 //  DBClient-Example
 //
 //  Created by Roman Kyrylenko on 2/9/17.
@@ -10,7 +10,7 @@ import XCTest
 import DBClient
 @testable import Example
 
-final class ExecuteTests: DBClientTest {
+final class CoreDataExecuteTests: DBClientCoreDataTest {
     
     func test_SingleExecute_WhenSuccessful_ReturnsCount() {
         let randomUser = User.createRandom()
@@ -125,5 +125,4 @@ final class ExecuteTests: DBClientTest {
             XCTAssertEqual(expectedUsers, preicatedUsers)
         }
     }
-
 }

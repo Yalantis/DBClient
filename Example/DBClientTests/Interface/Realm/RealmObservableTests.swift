@@ -1,5 +1,5 @@
 ////
-////  ObservableTests.swift
+////  RealmObservableTests.swift
 ////  DBClient-Example
 ////
 ////  Created by Roman Kyrylenko on 2/13/17.
@@ -10,7 +10,7 @@ import XCTest
 import DBClient
 @testable import Example
 
-final class ObservableTests: DBClientTest {
+final class RealmObservableTests: DBClientRealmTest {
     
     func test_InsertionObservation_WhenSuccessful_InvokesChnages() {
         let request = FetchRequest<User>()

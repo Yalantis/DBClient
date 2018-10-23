@@ -1,5 +1,5 @@
 //
-//  FetchTests.swift
+//  RealmFetchTests.swift
 //  DBClient-Example
 //
 //  Created by Roman Kyrylenko on 2/8/17.
@@ -11,7 +11,7 @@ import XCTest
 import DBClient
 @testable import Example
 
-class FetchTests: DBClientTest {
+class RealmFetchTests: DBClientRealmTest {
     
     func test_SyncFetch_WhenSuccessful_ReturnObject() {
         let randomUser = User.createRandom()
@@ -61,5 +61,4 @@ class FetchTests: DBClientTest {
             XCTAssertEqual(expectedObjectsCount, randomUsers.count)
         }
     }
-    
 }

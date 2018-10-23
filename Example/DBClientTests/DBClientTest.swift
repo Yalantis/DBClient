@@ -8,43 +8,27 @@
 
 import XCTest
 import DBClient
-import RealmSwift
 @testable import Example
-
-enum StorageType {
-    
-    case realm
-    case coreData
-}
-
-let storageType: StorageType = .coreData
 
 class DBClientTest: XCTestCase {
     
-    var dbClient: DBClient!
+    var dbClient: DBClient! { return nil }
     
     override func setUp() {
         super.setUp()
         
-        switch storageType {
-        case .realm:
-            let realm = try! Realm()
-            dbClient = RealmDBClient(realm: realm)
-            
-        case .coreData:
-            dbClient = CoreDataDBClient(forModel: "Users")
-        }
         cleanUpDatabase()
     }
     
     override func tearDown() {
-        super.tearDown()
-        
         cleanUpDatabase()
+        
+        super.tearDown()
     }
     
     // removes all objects from the database
     func cleanUpDatabase() {
+        guard dbClient != nil else { return }
         let expectationDeleletion = expectation(description: "Deletion")
         var isDeleted = false
         

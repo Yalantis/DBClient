@@ -1,5 +1,5 @@
 //
-//  UpsertTests.swift
+//  CoreDataUpsertTests.swift
 //  DBClient-Example
 //
 //  Created by Roman Kyrylenko on 2/15/17.
@@ -9,7 +9,7 @@
 import XCTest
 @testable import Example
 
-final class UpsertTests: DBClientTest {
+final class CoreDataUpsertTests: DBClientCoreDataTest {
     
     func test_UpsertUsers_WhenSuccessful_ReturnsUpsertedUsers() {
         let newUsers: [User] = (0...5).map { _ in User.createRandom() }
@@ -29,5 +29,4 @@ final class UpsertTests: DBClientTest {
             XCTAssertEqual(expectedUsers, combinedUsers)
         }
     }
-    
 }

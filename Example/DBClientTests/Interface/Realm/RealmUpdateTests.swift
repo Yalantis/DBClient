@@ -1,5 +1,5 @@
 //
-//  UpdateTests.swift
+//  RealmUpdateTests.swift
 //  DBClient-Example
 //
 //  Created by Roman Kyrylenko on 2/9/17.
@@ -9,7 +9,7 @@
 import XCTest
 @testable import Example
 
-final class UpdateTests: DBClientTest {
+final class RealmUpdateTests: DBClientRealmTest {
     
     func test_UpdateUserName_WhenSuccessful_SetsCorrectName() {
         let randomUser = User.createRandom()
