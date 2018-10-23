@@ -6,9 +6,9 @@
 
 There're three podspecs:
 
-- `DBClient/Core` contain pure (CoreData/Realm-free) interface / types used to abstract from implementation. Use it only in case you're about to provide custom implementation of any available storage types.
-- `DBClient/CoreData` contain CoreData implementation.
-- `DBClient/Realm` contain Realm implementation.
+- `DBClient/Core` contains pure (CoreData/Realm-free) interface / types used to abstract from implementation. Use it only in case you're about to provide custom implementation of any available storage types.
+- `DBClient/CoreData` contains CoreData implementation.
+- `DBClient/Realm` contains Realm implementation.
 
 ## Usage
 
