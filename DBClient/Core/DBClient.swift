@@ -12,8 +12,8 @@ import YALResult
 public typealias Result = YALResult.Result
 
 public enum DBClientError: Error {
-    case noPrimaryKey
-    case noData
+    
+    case missingPrimaryKey, missingData
 }
 
 /// Protocol for transaction restrictions in `DBClient`.
@@ -25,7 +25,6 @@ public protocol Stored {
     
     /// Primary value for an instance
     var valueOfPrimaryKey: CVarArg? { get }
-    
 }
 
 /// Describes abstract database transactions, common for all engines.
@@ -71,7 +70,6 @@ public protocol DBClient {
     ///   - objects: objects to be worked with
     ///   - completion: `Result` with inserted and updated instances.
     func upsert<T : Stored>(_ objects: [T], completion: @escaping (Result<(updated: [T], inserted: [T])>) -> Void)
-    
 }
 
 public extension DBClient {
@@ -93,7 +91,7 @@ public extension DBClient {
     ///   - completion: `Result` with found object or nil
     func findFirst<T: Stored>(_ type: T.Type, primaryValue: String, predicate: NSPredicate? = nil, completion: @escaping (Result<T?>) -> Void) {
         guard let primaryKey = type.primaryKeyName else {
-            completion(.failure(DBClientError.noPrimaryKey))
+            completion(.failure(DBClientError.missingPrimaryKey))
             return
         }
         
@@ -138,11 +136,26 @@ public extension DBClient {
         delete([object], completion: completion)
     }
     
+    /// Updates existing in database instances or creates them using upsert method defined in your model
+    ///
+    /// - Parameters:
+    ///   - object: object to be worked with
+    ///   - completion: `Result` with inserted or updated instance.
+    func upsert<T : Stored>(_ object: T, completion: @escaping (Result<(object: T, isUpdated: Bool)>) -> Void) {
+        upsert([object]) { result in
+            completion(result.next { (updated: [T], inserted: [T]) -> Result<(object: T, isUpdated: Bool)> in
+                guard let object = updated.first ?? inserted.first else {
+                    return Result.failure(DBClientError.missingData)
+                }
+                return Result.success((object: object, isUpdated: !updated.isEmpty))
+            })
+        }
+    }
+    
     private func convertArrayTaskToSingleObject<T>(_ array: [T]) -> Result<T> {
         guard let first = array.first else {
-            return .failure(DBClientError.noData)
+            return .failure(DBClientError.missingData)
         }
         return .success(first)
     }
-    
 }

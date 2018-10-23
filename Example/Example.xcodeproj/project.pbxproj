@@ -187,9 +187,9 @@
 		C533726E1E261A30004ECBCF /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				C53372781E261A30004ECBCF /* User.swift */,
 				C533726F1E261A30004ECBCF /* CoreData */,
 				C53372751E261A30004ECBCF /* Realm */,
+				C53372781E261A30004ECBCF /* User.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
