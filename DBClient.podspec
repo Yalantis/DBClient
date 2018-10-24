@@ -30,6 +30,6 @@ Pod::Spec.new do |s|
   s.subspec "Realm" do  |spec|
   	spec.dependency "DBClient/Core"
     spec.source_files = ['DBClient/Realm/*.swift']
-    spec.dependency "RealmSwift", "~> 3.11"
+    spec.dependency "RealmSwift", "~> 3.11.1"
   end
 end
