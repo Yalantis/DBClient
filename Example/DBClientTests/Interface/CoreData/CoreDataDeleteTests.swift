@@ -11,12 +11,30 @@ import XCTest
 
 final class CoreDataDeleteTests: DBClientCoreDataTest {
     
+    func test_SyncSingleDeletion_WhenSuccessful_ReturnsNil() {
+        let randomUser = User.createRandom()
+        
+        let result = dbClient.insert(randomUser)
+        let removalResult = dbClient.delete(result.require())
+        
+        XCTAssertNotNil(removalResult.value)
+    }
+    
+    func test_SyncBulkDeletion_WhenSuccessful_ReturnsNil() {
+        let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
+        
+        let insertionResult = dbClient.insert(randomUsers)
+        let removalResult = dbClient.delete(insertionResult.require())
+        
+        XCTAssertNotNil(removalResult.value)
+    }
+    
     func test_SingleDeletion_WhenSuccessful_ReturnsNil() {
         let randomUser = User.createRandom()
         let expectationHit = expectation(description: "Object")
         var isDeleted = false
         
-        self.dbClient.insert(randomUser) { result in
+        dbClient.insert(randomUser) { result in
             if let object = result.value {
                 self.dbClient.delete(object) { result in
                     isDeleted = result.value != nil
@@ -35,7 +53,7 @@ final class CoreDataDeleteTests: DBClientCoreDataTest {
         let expectationHit = expectation(description: "Object")
         var isDeleted = false
         
-        self.dbClient.insert(randomUsers) { result in
+        dbClient.insert(randomUsers) { result in
             if let objects = result.value {
                 self.dbClient.delete(objects) { result in
                     isDeleted = result.value != nil

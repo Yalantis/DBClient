@@ -11,6 +11,18 @@ import XCTest
 
 final class CoreDataUpsertTests: DBClientCoreDataTest {
     
+    func test_SyncUpsertUsers_WhenSuccessful_ReturnsUpsertedUsers() {
+        let newUsers: [User] = (0...5).map { _ in User.createRandom() }
+        let savedUsers: [User] = (0...5).map { _ in User.createRandom() }
+        let combinedUsers = savedUsers + newUsers
+        
+        dbClient.insert(savedUsers)
+        let result = dbClient.upsert(combinedUsers)
+        
+        let expectedUsers = result.require().updated + result.require().inserted
+        XCTAssertEqual(expectedUsers.sorted(), combinedUsers.sorted())
+    }
+    
     func test_UpsertUsers_WhenSuccessful_ReturnsUpsertedUsers() {
         let newUsers: [User] = (0...5).map { _ in User.createRandom() }
         let savedUsers: [User] = (0...5).map { _ in User.createRandom() }

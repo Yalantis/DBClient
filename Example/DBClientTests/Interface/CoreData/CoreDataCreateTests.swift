@@ -11,12 +11,32 @@ import XCTest
 
 final class CoreDataCreateTests: DBClientCoreDataTest {
     
+    func test_SyncSingleInsertion_WhenSuccessful_ReturnsObject() {
+        let randomUser = User.createRandom()
+        let result = dbClient.insert(randomUser)
+        switch result {
+        case .failure(let error): XCTFail(error.localizedDescription)
+        case .success(let user): XCTAssertEqual(randomUser, user)
+        }
+    }
+    
+    func test_SyncBulkInsertion_WhenSuccessful_ReturnsObjects() {
+        let randomUsers: [User] = (0...100).map { _ in User.createRandom() }
+
+        let result = dbClient.insert(randomUsers)
+        
+        switch result {
+        case .failure(let error): XCTFail(error.localizedDescription)
+        case .success(let users): XCTAssertEqual(users.sorted(), randomUsers.sorted())
+        }
+    }
+    
     func test_SingleInsertion_WhenSuccessful_ReturnsObject() {
         let randomUser = User.createRandom()
         let expectationObject = expectation(description: "Object")
         var expectedObject: User?
         
-        self.dbClient.insert(randomUser) { result in
+        dbClient.insert(randomUser) { result in
             expectedObject = result.value
             expectationObject.fulfill()
         }
@@ -32,7 +52,7 @@ final class CoreDataCreateTests: DBClientCoreDataTest {
         let expectationObjects = expectation(description: "Objects")
         var expectedObjectsCount = 0
 
-        self.dbClient.insert(randomUsers) { result in
+        dbClient.insert(randomUsers) { result in
             expectedObjectsCount = result.value?.count ?? 0
             expectationObjects.fulfill()
         }

@@ -100,7 +100,7 @@ public protocol DBClient {
     ///   - objects: list of objects to be deleted
     /// - Returns: `Result` with appropriate error in case of failure.
     @discardableResult
-    func delete<T: Stored>(_ objects: [T]) -> Result<()>
+    func delete<T: Stored>(_ objects: [T]) -> Result<Void>
     
     /// Synchronously iterates through given objects and updates existing in database instances or creates them
     ///
@@ -190,6 +190,11 @@ public extension DBClient {
         insert([object], completion: { completion($0.next(self.convertArrayTaskToSingleObject)) })
     }
     
+    @discardableResult
+    func insert<T: Stored>(_ object: T) -> Result<T> {
+        return insert([object]).next(convertArrayTaskToSingleObject)
+    }
+    
     /// Updates changed performed with object to database.
     ///
     /// - Parameters:
@@ -197,6 +202,11 @@ public extension DBClient {
     ///   - completion: `Result` with updated object or appropriate error in case of failure.
     func update<T: Stored>(_ object: T, completion: @escaping (Result<T>) -> Void) {
         update([object], completion: { completion($0.next(self.convertArrayTaskToSingleObject)) })
+    }
+    
+    @discardableResult
+    func update<T: Stored>(_ object: T) -> Result<T> {
+        return update([object]).next(convertArrayTaskToSingleObject)
     }
     
     /// Deletes object from database.
@@ -208,12 +218,17 @@ public extension DBClient {
         delete([object], completion: completion)
     }
     
+    @discardableResult
+    func delete<T: Stored>(_ object: T) -> Result<Void> {
+        return delete([object])
+    }
+    
     /// Updates existing in database instances or creates them using upsert method defined in your model
     ///
     /// - Parameters:
     ///   - object: object to be worked with
     ///   - completion: `Result` with inserted or updated instance.
-    func upsert<T : Stored>(_ object: T, completion: @escaping (Result<(object: T, isUpdated: Bool)>) -> Void) {
+    func upsert<T: Stored>(_ object: T, completion: @escaping (Result<(object: T, isUpdated: Bool)>) -> Void) {
         upsert([object]) { result in
             completion(result.next { (updated: [T], inserted: [T]) -> Result<(object: T, isUpdated: Bool)> in
                 guard let object = updated.first ?? inserted.first else {
@@ -221,6 +236,16 @@ public extension DBClient {
                 }
                 return Result.success((object: object, isUpdated: !updated.isEmpty))
             })
+        }
+    }
+    
+    @discardableResult
+    func upsert<T: Stored>(_ object: T) -> Result<(object: T, isUpdated: Bool)> {
+        return upsert([object]).next { (updated: [T], inserted: [T]) in
+            guard let object = updated.first ?? inserted.first else {
+                return Result.failure(DBClientError.missingData)
+            }
+            return Result.success((object: object, isUpdated: !updated.isEmpty))
         }
     }
     
