@@ -52,7 +52,32 @@ extension RealmDBClient: DBClient {
         completion(execute(request))
     }
     
-    public func execute<T>(_ request: FetchRequest<T>) -> Result<[T]> where T : Stored {
+    /// Inserts new objects to database. If object with such `primaryKeyValue` already exists Realm'll throw an error
+    public func insert<T>(_ objects: [T], completion: @escaping (Result<[T]>) -> Void) where T : Stored {
+        completion(insert(objects))
+    }
+    
+    /// Updates objects which are already in db.
+    public func update<T>(_ objects: [T], completion: @escaping (Result<[T]>) -> Void) where T : Stored {
+        completion(update(objects))
+    }
+    
+    /// Removes objects by it `primaryKeyValue`s
+    public func delete<T>(_ objects: [T], completion: @escaping (Result<()>) -> Void) where T : Stored {
+        completion(delete(objects))
+    }
+
+    public func upsert<T>(_ objects: [T], completion: @escaping (Result<(updated: [T], inserted: [T])>) -> Void) where T : Stored {
+        completion(upsert(objects))
+    }
+    
+    public func observable<T>(for request: FetchRequest<T>) -> RequestObservable<T> {
+        checkType(T.self)
+        
+        return RealmObservable(request: request, realm: realm)
+    }
+    
+    public func execute<T>(_ request: FetchRequest<T>) -> Result<[T]> {
         let modelType = checkType(T.self)
         let neededType = modelType.realmClass()
         let objects = request
@@ -64,26 +89,26 @@ extension RealmDBClient: DBClient {
         return .success(objects)
     }
     
-    /// Inserts new objects to database. If object with such `primaryKeyValue` already exists Realm'll throw an error
-    public func insert<T>(_ objects: [T], completion: @escaping (Result<[T]>) -> Void) where T : Stored {
+    @discardableResult
+    public func insert<T: Stored>(_ objects: [T]) -> Result<[T]> {
         checkType(T.self)
-
+        
         let realmObjects = objects.compactMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
-
+        
         do {
             realm.beginWrite()
             realm.add(realmObjects)
             try realm.commitWrite()
-            completion(.success(objects))
-        } catch let error {
-            completion(.failure(error))
+            return .success(objects)
+        } catch {
+            return .failure(error)
         }
     }
     
-    /// Updates objects which are already in db.
-    public func update<T>(_ objects: [T], completion: @escaping (Result<[T]>) -> Void) where T : Stored {
+    @discardableResult
+    public func update<T: Stored>(_ objects: [T]) -> Result<[T]> {
         checkType(T.self)
-
+        
         let realmObjects = separate(objects: objects)
             .present
             .compactMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
@@ -92,16 +117,16 @@ extension RealmDBClient: DBClient {
             realm.add(realmObjects, update: true)
             try realm.commitWrite()
             
-            completion(.success(objects))
+            return .success(objects)
         } catch let error {
-            completion(.failure(error))
+            return .failure(error)
         }
     }
     
-    /// Removes objects by it `primaryKeyValue`s
-    public func delete<T>(_ objects: [T], completion: @escaping (Result<()>) -> Void) where T : Stored {
+    @discardableResult
+    public func delete<T: Stored>(_ objects: [T]) -> Result<()> {
         let type = checkType(T.self)
-
+        
         let realmType = type.realmClass()
         
         do {
@@ -111,32 +136,28 @@ extension RealmDBClient: DBClient {
             realm.delete(realmObjects)
             try realm.commitWrite()
             
-            completion(.success(()))
-        } catch let error {
-            completion(.failure(error))
+            return .success(())
+        } catch {
+            return .failure(error)
         }
     }
-
-    public func upsert<T>(_ objects: [T], completion: @escaping (Result<(updated: [T], inserted: [T])>) -> Void) where T : Stored {
+    
+    @discardableResult
+    public func upsert<T : Stored>(_ objects: [T]) -> Result<(updated: [T], inserted: [T])> {
         checkType(T.self)
-
+        
         let separatedObjects = separate(objects: objects)
         let realmObjects = objects.compactMap { ($0 as? RealmModelConvertible)?.toRealmObject() }
         do {
             realm.beginWrite()
             realm.add(realmObjects, update: true)
             try realm.commitWrite()
-            completion(.success((updated: separatedObjects.present, inserted: separatedObjects.new)))
-        } catch let error {
-            completion(.failure(error))
+            return .success((updated: separatedObjects.present, inserted: separatedObjects.new))
+        } catch {
+            return .failure(error)
         }
     }
     
-    public func observable<T>(for request: FetchRequest<T>) -> RequestObservable<T> {
-        checkType(T.self)
-        
-        return RealmObservable(request: request, realm: realm)
-    }
 }
 
 private extension RealmDBClient {

@@ -62,5 +62,4 @@ internal class RealmObservable<T: Stored>: RequestObservable<T> {
     public func stopObserving() {
         notificationToken = nil
     }
-    
 }
