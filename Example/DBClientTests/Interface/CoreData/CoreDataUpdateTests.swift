@@ -1,5 +1,5 @@
 //
-//  UpdateTests.swift
+//  CoreDataUpdateTests.swift
 //  DBClient-Example
 //
 //  Created by Roman Kyrylenko on 2/9/17.
@@ -9,7 +9,17 @@
 import XCTest
 @testable import Example
 
-final class UpdateTests: DBClientTest {
+final class CoreDataUpdateTests: DBClientCoreDataTest {
+    
+    func test_SyncUpdateUserName_WhenSuccessful_SetsCorrectName() {
+        let randomUser = User.createRandom()
+        
+        dbClient.insert(randomUser)
+        randomUser.name = "Bob"
+        let updationResult = dbClient.update(randomUser)
+        
+        XCTAssertEqual(randomUser, updationResult.value)
+    }
     
     func test_UpdateUserName_WhenSuccessful_SetsCorrectName() {
         let randomUser = User.createRandom()
@@ -28,5 +38,4 @@ final class UpdateTests: DBClientTest {
             XCTAssertEqual(expectedUser?.name, "Bob")
         }
     }
-
 }

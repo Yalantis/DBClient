@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "DBClient"
-  s.version          = "1.1"
+  s.version          = "1.2"
   s.requires_arc = true
   s.summary          = "CoreData & Realm wrapper written on Swift"
   s.homepage         = ""
@@ -11,6 +11,7 @@ Pod::Spec.new do |s|
   s.homepage = 'https://yalantis.com/'
 
   s.ios.deployment_target = "10.0"
+  s.swift_version = '4.2'
 
   s.dependency 'YALResult', '1.1'
   
@@ -29,6 +30,6 @@ Pod::Spec.new do |s|
   s.subspec "Realm" do  |spec|
   	spec.dependency "DBClient/Core"
     spec.source_files = ['DBClient/Realm/*.swift']
-    spec.dependency "RealmSwift", "~> 3.11"
+    spec.dependency "RealmSwift", "~> 3.11.1"
   end
 end

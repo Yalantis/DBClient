@@ -141,10 +141,10 @@ public func upsertManagedObject(in context: NSManagedObjectContext, existedInsta
 ## Version history
 
 
-| Version  | Swift  | Dependencies | iOS |
-|-----------|-------|------------------|------|
-| `1.1`     | 4.2   | RealmSwift 3.11, YALResult 1.1     | 10 |
-| `1.0`     | 4.2   | RealmSwift 2.10.1, YALResult 1.0  | 10 |
-| `0.7`     | 4.0   | RealmSwift 2.10.1, BoltsSwift 1.4  | 9   |
-| `0.6`     |  4     | RealmSwift 2.10.1, BoltsSwift 1.3  | 9   |
-| `0.4.2` |  3.2  | RealmSwift 2.1.1,  BoltsSwift 1.3   | 9   |
+| Version | Swift | Dependencies                                | iOS  |
+|----------|-------|----------------------------------------|------|
+| `1.2`     | 4.2    | RealmSwift 3.11.1, YALResult 1.1  | 10   |
+| `1.0`     | 4.2    | RealmSwift 2.10.1, YALResult 1.0  | 10   |
+| `0.7`     | 4.0    | RealmSwift 2.10.1, BoltsSwift 1.4  | 9     |
+| `0.6`     |  4      | RealmSwift 2.10.1, BoltsSwift 1.3  | 9     |
+| `0.4.2` |  3.2   | RealmSwift 2.1.1,  BoltsSwift 1.3   | 9     |

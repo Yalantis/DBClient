@@ -1,5 +1,5 @@
 //
-//  FetchTests.swift
+//  RealmFetchTests.swift
 //  DBClient-Example
 //
 //  Created by Roman Kyrylenko on 2/8/17.
@@ -11,7 +11,21 @@ import XCTest
 import DBClient
 @testable import Example
 
-class FetchTests: DBClientTest {
+class RealmFetchTests: DBClientRealmTest {
+    
+    func test_SyncFetch_WhenSuccessful_ReturnObject() {
+        let randomUser = User.createRandom()
+        let expectationObject = expectation(description: "Inserting object")
+        
+        self.dbClient.insert(randomUser) { _ in expectationObject.fulfill() }
+        
+        waitForExpectations(timeout: 1) { _ in
+            let result = self.dbClient.execute(FetchRequest<User>(predicate: NSPredicate(format: "id == %@", randomUser.id)))
+            XCTAssertEqual(result.require().count, 1)
+            let object = result.require().first
+            XCTAssertEqual(object, randomUser)
+        }
+    }
     
     func test_SingleFetch_WhenSuccessful_ReturnsObject() {
         let randomUser = User.createRandom()
@@ -47,5 +61,4 @@ class FetchTests: DBClientTest {
             XCTAssertEqual(expectedObjectsCount, randomUsers.count)
         }
     }
-    
 }

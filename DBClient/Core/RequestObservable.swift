@@ -29,7 +29,6 @@ public enum ObservableChange<T: Stored> {
     case initial([T])
     case change(ModelChange)
     case error(Error)
-    
 }
 
 public class RequestObservable<T: Stored> {
@@ -47,5 +46,4 @@ public class RequestObservable<T: Stored> {
     public func observe(_ closure: @escaping (ObservableChange<T>) -> Void) {
         assertionFailure("The observe method must be overriden")
     }
-    
 }
