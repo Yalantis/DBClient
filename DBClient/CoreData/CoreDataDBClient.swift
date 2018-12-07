@@ -501,6 +501,22 @@ extension CoreDataDBClient: DBClient {
         return result
     }
     
+    public func deleteAllObjects<T>(of type: T, completion: @escaping (Result<()>) -> Void) where T : Stored {
+        let type = checkType(T.self)
+        
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: type.entityName)
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        performWriteTask { context, savingClosure in
+            do {
+                try context.execute(deleteRequest)
+                try savingClosure()
+                completion(.success(()))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+    }
+    
     @discardableResult
     public func upsert<T : Stored>(_ objects: [T]) -> Result<(updated: [T], inserted: [T])> {
         checkType(T.self)

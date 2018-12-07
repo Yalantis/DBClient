@@ -66,6 +66,23 @@ extension RealmDBClient: DBClient {
     public func delete<T>(_ objects: [T], completion: @escaping (Result<()>) -> Void) where T : Stored {
         completion(delete(objects))
     }
+    
+    public func deleteAllObjects<T>(of type: T, completion: @escaping (Result<()>) -> Void) where T: Stored {
+        let type = checkType(T.self)
+        
+        let realmType = type.realmClass()
+        
+        do {
+            let realmObjects = realm.objects(realmType)
+            realm.beginWrite()
+            realm.delete(realmObjects)
+            try realm.commitWrite()
+            
+            completion(.success(()))
+        } catch {
+            completion(.failure(error))
+        }
+    }
 
     public func upsert<T>(_ objects: [T], completion: @escaping (Result<(updated: [T], inserted: [T])>) -> Void) where T : Stored {
         completion(upsert(objects))
