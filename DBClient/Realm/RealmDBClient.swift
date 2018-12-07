@@ -67,7 +67,7 @@ extension RealmDBClient: DBClient {
         completion(delete(objects))
     }
     
-    public func deleteAllObjects<T>(of type: T, completion: @escaping (Result<()>) -> Void) where T: Stored {
+    public func deleteAllObjects<T>(of type: T.Type, completion: @escaping (Result<()>) -> Void) where T: Stored {
         let type = checkType(T.self)
         
         let realmType = type.realmClass()

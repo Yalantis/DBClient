@@ -65,7 +65,7 @@ public protocol DBClient {
     func delete<T: Stored>(_ objects: [T], completion: @escaping (Result<()>) -> Void)
     
     /// Removes all object of a given type from database.
-    func deleteAllObjects<T: Stored>(of type: T, completion: @escaping (Result<()>) -> Void)
+    func deleteAllObjects<T: Stored>(of type: T.Type, completion: @escaping (Result<()>) -> Void)
     
     /// Iterates through given objects and updates existing in database instances or creates them
     ///
