@@ -19,6 +19,9 @@ class User {
         self.name = name
     }
     
+    func mutate() {
+        name = String(name.reversed())
+    }
 }
 
 extension User: Stored {
@@ -30,7 +33,6 @@ extension User: Stored {
     public var valueOfPrimaryKey: CVarArg? {
         return id
     }
-
 }
 
 extension User {
@@ -41,5 +43,4 @@ extension User {
         
         return user
     }
-    
 }

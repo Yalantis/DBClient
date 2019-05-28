@@ -9,7 +9,7 @@
 import UIKit
 import DBClient
 
-class MasterViewController: UITableViewController, DBClientInjectable {
+final class MasterViewController: UITableViewController, DBClientInjectable {
     
     fileprivate var objects = [User]()
     
@@ -19,10 +19,10 @@ class MasterViewController: UITableViewController, DBClientInjectable {
         super.viewDidLoad()
         
         let observable = dbClient.observable(for: FetchRequest<User>(sortDescriptor: NSSortDescriptor(key: "name", ascending: true)))
+        userChangesObservable = observable
         observable.observe { [weak self] changeSet in
             self?.observeChanges(changeSet)
         }
-        userChangesObservable = observable
         
         navigationItem.leftBarButtonItem = editButtonItem
     }
@@ -44,13 +44,10 @@ class MasterViewController: UITableViewController, DBClientInjectable {
     // MARK: - Actions
     
     @IBAction private func addObject(_ sender: Any) {
-        dbClient.insert(User.createRandom()) { result in
-            print(result)
-        }
+        dbClient.insert(User.createRandom()) { _ in }
     }
     
     private func observeChanges(_ changeSet: ObservableChange<User>) {
-        
         switch changeSet {
         case .initial(let initial):
             objects.append(contentsOf: initial)
@@ -75,7 +72,6 @@ class MasterViewController: UITableViewController, DBClientInjectable {
             print("Got an error: \(error)")
         }
     }
-    
 }
 
 // MARK: - Table View
@@ -106,5 +102,4 @@ extension MasterViewController {
         let user = objects[indexPath.row]
         dbClient.delete(user) { _ in }
     }
-    
 }

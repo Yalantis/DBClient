@@ -21,18 +21,12 @@ public struct FetchRequest<T: Stored> {
     ///   - sortDescriptor: Sort descriptor; nil by default.
     ///   - fetchOffset: Offset of data for request; 0 by default (no offset).
     ///   - fetchLimit: Amount of objects to be fetched; no limit if zero given; 0 by default.
-    public init(
-        predicate: NSPredicate? = nil,
-        sortDescriptor: NSSortDescriptor? = nil,
-        fetchOffset: Int = 0,
-        fetchLimit: Int = 0
-        ) {
+    public init(predicate: NSPredicate? = nil, sortDescriptor: NSSortDescriptor? = nil, fetchOffset: Int = 0, fetchLimit: Int = 0) {
         self.predicate = predicate
         self.sortDescriptor = sortDescriptor
         self.fetchOffset = fetchOffset
         self.fetchLimit = fetchLimit
     }
-    
 }
 
 // MARK: - Filtering
@@ -74,7 +68,6 @@ public extension FetchRequest {
     func filtered(with key: String, notIn value: [String]) -> FetchRequest<T> {
         return request(withPredicate: NSPredicate(format: "NOT (\(key) IN %@)", value))
     }
-    
 }
 
 // MARK: - Sorting
@@ -96,7 +89,6 @@ public extension FetchRequest {
     func sorted(with key: String?, ascending: Bool, selector: Selector) -> FetchRequest<T> {
         return request(withSortDescriptor: NSSortDescriptor(key: key, ascending: ascending, selector: selector))
     }
-    
 }
 
 // MARK: - Private
@@ -104,21 +96,10 @@ public extension FetchRequest {
 private extension FetchRequest {
     
     func request(withPredicate predicate: NSPredicate) -> FetchRequest<T> {
-        return FetchRequest<T>(
-            predicate: predicate,
-            sortDescriptor: sortDescriptor,
-            fetchOffset: fetchOffset,
-            fetchLimit: fetchLimit
-        )
+        return FetchRequest<T>(predicate: predicate, sortDescriptor: sortDescriptor, fetchOffset: fetchOffset, fetchLimit: fetchLimit)
     }
     
     func request(withSortDescriptor sortDescriptor: NSSortDescriptor) -> FetchRequest<T> {
-        return FetchRequest<T>(
-            predicate: predicate,
-            sortDescriptor: sortDescriptor,
-            fetchOffset: fetchOffset,
-            fetchLimit: fetchLimit
-        )
+        return FetchRequest<T>(predicate: predicate, sortDescriptor: sortDescriptor, fetchOffset: fetchOffset, fetchLimit: fetchLimit)
     }
-    
 }

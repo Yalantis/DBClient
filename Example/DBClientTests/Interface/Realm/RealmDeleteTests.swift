@@ -1,5 +1,5 @@
 //
-//  DeleteTests.swift
+//  RealmDeleteTests.swift
 //  DBClient-Example
 //
 //  Created by Roman Kyrylenko on 2/9/17.
@@ -9,7 +9,7 @@
 import XCTest
 @testable import Example
 
-final class DeleteTests: DBClientTest {
+final class RealmDeleteTests: DBClientRealmTest {
     
     func test_SingleDeletion_WhenSuccessful_ReturnsNil() {
         let randomUser = User.createRandom()

@@ -10,15 +10,24 @@
 		6544BEF6B0A326E74A0930F3 /* Pods_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8EE3B934F48958491C32E38F /* Pods_Example.framework */; };
 		91146657A7C9C72AEB2CA0A0 /* Pods_DBClientTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5FF85D02C1E34B0EF6E75EB /* Pods_DBClientTests.framework */; };
 		B8275B001E4B6D2600232EE4 /* DBClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8275AFF1E4B6D2600232EE4 /* DBClientTest.swift */; };
-		B8477E9C1E4DC0EA00608B78 /* CreateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8477E951E4DC0EA00608B78 /* CreateTests.swift */; };
-		B8477E9D1E4DC0EA00608B78 /* DeleteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8477E961E4DC0EA00608B78 /* DeleteTests.swift */; };
-		B8477E9E1E4DC0EA00608B78 /* ExecuteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8477E971E4DC0EA00608B78 /* ExecuteTests.swift */; };
-		B8477E9F1E4DC0EA00608B78 /* FetchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8477E981E4DC0EA00608B78 /* FetchTests.swift */; };
-		B8477EA01E4DC0EA00608B78 /* UpdateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8477E991E4DC0EA00608B78 /* UpdateTests.swift */; };
 		B8477EA11E4DC0EA00608B78 /* User+Comparable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8477E9A1E4DC0EA00608B78 /* User+Comparable.swift */; };
 		B8477EA21E4DC0EA00608B78 /* User+Equtable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8477E9B1E4DC0EA00608B78 /* User+Equtable.swift */; };
-		B88711421E5211AF00189D40 /* ObservableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88711411E5211AF00189D40 /* ObservableTests.swift */; };
-		B8E447AB1E54916E0078D81A /* UpsertTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8E447AA1E54916E0078D81A /* UpsertTests.swift */; };
+		B8D2D430217F35200069CC57 /* CoreDataUpsertTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D429217F35200069CC57 /* CoreDataUpsertTests.swift */; };
+		B8D2D431217F35200069CC57 /* CoreDataExecuteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D42A217F35200069CC57 /* CoreDataExecuteTests.swift */; };
+		B8D2D432217F35200069CC57 /* CoreDataDeleteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D42B217F35200069CC57 /* CoreDataDeleteTests.swift */; };
+		B8D2D433217F35200069CC57 /* CoreDataUpdateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D42C217F35200069CC57 /* CoreDataUpdateTests.swift */; };
+		B8D2D434217F35200069CC57 /* CoreDataObservableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D42D217F35200069CC57 /* CoreDataObservableTests.swift */; };
+		B8D2D435217F35200069CC57 /* CoreDataFetchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D42E217F35200069CC57 /* CoreDataFetchTests.swift */; };
+		B8D2D436217F35200069CC57 /* CoreDataCreateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D42F217F35200069CC57 /* CoreDataCreateTests.swift */; };
+		B8D2D43E217F35260069CC57 /* RealmUpdateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D437217F35260069CC57 /* RealmUpdateTests.swift */; };
+		B8D2D43F217F35260069CC57 /* RealmCreateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D438217F35260069CC57 /* RealmCreateTests.swift */; };
+		B8D2D440217F35260069CC57 /* RealmDeleteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D439217F35260069CC57 /* RealmDeleteTests.swift */; };
+		B8D2D441217F35260069CC57 /* RealmUpsertTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D43A217F35260069CC57 /* RealmUpsertTests.swift */; };
+		B8D2D442217F35260069CC57 /* RealmExecuteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D43B217F35260069CC57 /* RealmExecuteTests.swift */; };
+		B8D2D443217F35260069CC57 /* RealmFetchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D43C217F35260069CC57 /* RealmFetchTests.swift */; };
+		B8D2D444217F35260069CC57 /* RealmObservableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D43D217F35260069CC57 /* RealmObservableTests.swift */; };
+		B8D2D446217F36B40069CC57 /* DBClientRealmTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D445217F36B40069CC57 /* DBClientRealmTest.swift */; };
+		B8D2D448217F36DC0069CC57 /* DBClientCoreDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D2D447217F36DC0069CC57 /* DBClientCoreDataTest.swift */; };
 		C533725A1E26155D004ECBCF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C53372591E26155D004ECBCF /* AppDelegate.swift */; };
 		C533725C1E26155D004ECBCF /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C533725B1E26155D004ECBCF /* MasterViewController.swift */; };
 		C533725E1E26155D004ECBCF /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C533725D1E26155D004ECBCF /* DetailViewController.swift */; };
@@ -54,15 +63,24 @@
 		B8275AFD1E4B6D2500232EE4 /* DBClientTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DBClientTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8275AFF1E4B6D2600232EE4 /* DBClientTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBClientTest.swift; sourceTree = "<group>"; };
 		B8275B011E4B6D2600232EE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B8477E951E4DC0EA00608B78 /* CreateTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateTests.swift; sourceTree = "<group>"; };
-		B8477E961E4DC0EA00608B78 /* DeleteTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteTests.swift; sourceTree = "<group>"; };
-		B8477E971E4DC0EA00608B78 /* ExecuteTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExecuteTests.swift; sourceTree = "<group>"; };
-		B8477E981E4DC0EA00608B78 /* FetchTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FetchTests.swift; sourceTree = "<group>"; };
-		B8477E991E4DC0EA00608B78 /* UpdateTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UpdateTests.swift; sourceTree = "<group>"; };
 		B8477E9A1E4DC0EA00608B78 /* User+Comparable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "User+Comparable.swift"; sourceTree = "<group>"; };
 		B8477E9B1E4DC0EA00608B78 /* User+Equtable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "User+Equtable.swift"; sourceTree = "<group>"; };
-		B88711411E5211AF00189D40 /* ObservableTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObservableTests.swift; sourceTree = "<group>"; };
-		B8E447AA1E54916E0078D81A /* UpsertTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UpsertTests.swift; sourceTree = "<group>"; };
+		B8D2D429217F35200069CC57 /* CoreDataUpsertTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataUpsertTests.swift; sourceTree = "<group>"; };
+		B8D2D42A217F35200069CC57 /* CoreDataExecuteTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataExecuteTests.swift; sourceTree = "<group>"; };
+		B8D2D42B217F35200069CC57 /* CoreDataDeleteTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataDeleteTests.swift; sourceTree = "<group>"; };
+		B8D2D42C217F35200069CC57 /* CoreDataUpdateTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataUpdateTests.swift; sourceTree = "<group>"; };
+		B8D2D42D217F35200069CC57 /* CoreDataObservableTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataObservableTests.swift; sourceTree = "<group>"; };
+		B8D2D42E217F35200069CC57 /* CoreDataFetchTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataFetchTests.swift; sourceTree = "<group>"; };
+		B8D2D42F217F35200069CC57 /* CoreDataCreateTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataCreateTests.swift; sourceTree = "<group>"; };
+		B8D2D437217F35260069CC57 /* RealmUpdateTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmUpdateTests.swift; sourceTree = "<group>"; };
+		B8D2D438217F35260069CC57 /* RealmCreateTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmCreateTests.swift; sourceTree = "<group>"; };
+		B8D2D439217F35260069CC57 /* RealmDeleteTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmDeleteTests.swift; sourceTree = "<group>"; };
+		B8D2D43A217F35260069CC57 /* RealmUpsertTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmUpsertTests.swift; sourceTree = "<group>"; };
+		B8D2D43B217F35260069CC57 /* RealmExecuteTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmExecuteTests.swift; sourceTree = "<group>"; };
+		B8D2D43C217F35260069CC57 /* RealmFetchTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmFetchTests.swift; sourceTree = "<group>"; };
+		B8D2D43D217F35260069CC57 /* RealmObservableTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmObservableTests.swift; sourceTree = "<group>"; };
+		B8D2D445217F36B40069CC57 /* DBClientRealmTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBClientRealmTest.swift; sourceTree = "<group>"; };
+		B8D2D447217F36DC0069CC57 /* DBClientCoreDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBClientCoreDataTest.swift; sourceTree = "<group>"; };
 		C53372561E26155D004ECBCF /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C53372591E26155D004ECBCF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C533725B1E26155D004ECBCF /* MasterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
@@ -137,15 +155,40 @@
 		B8477E941E4DC0EA00608B78 /* Interface */ = {
 			isa = PBXGroup;
 			children = (
-				B8477E951E4DC0EA00608B78 /* CreateTests.swift */,
-				B8477E961E4DC0EA00608B78 /* DeleteTests.swift */,
-				B8477E971E4DC0EA00608B78 /* ExecuteTests.swift */,
-				B8477E981E4DC0EA00608B78 /* FetchTests.swift */,
-				B88711411E5211AF00189D40 /* ObservableTests.swift */,
-				B8477E991E4DC0EA00608B78 /* UpdateTests.swift */,
-				B8E447AA1E54916E0078D81A /* UpsertTests.swift */,
+				B8D2D427217F35010069CC57 /* CoreData */,
+				B8D2D428217F350B0069CC57 /* Realm */,
 			);
 			path = Interface;
+			sourceTree = "<group>";
+		};
+		B8D2D427217F35010069CC57 /* CoreData */ = {
+			isa = PBXGroup;
+			children = (
+				B8D2D42F217F35200069CC57 /* CoreDataCreateTests.swift */,
+				B8D2D42B217F35200069CC57 /* CoreDataDeleteTests.swift */,
+				B8D2D42A217F35200069CC57 /* CoreDataExecuteTests.swift */,
+				B8D2D42E217F35200069CC57 /* CoreDataFetchTests.swift */,
+				B8D2D42D217F35200069CC57 /* CoreDataObservableTests.swift */,
+				B8D2D42C217F35200069CC57 /* CoreDataUpdateTests.swift */,
+				B8D2D429217F35200069CC57 /* CoreDataUpsertTests.swift */,
+				B8D2D447217F36DC0069CC57 /* DBClientCoreDataTest.swift */,
+			);
+			path = CoreData;
+			sourceTree = "<group>";
+		};
+		B8D2D428217F350B0069CC57 /* Realm */ = {
+			isa = PBXGroup;
+			children = (
+				B8D2D445217F36B40069CC57 /* DBClientRealmTest.swift */,
+				B8D2D438217F35260069CC57 /* RealmCreateTests.swift */,
+				B8D2D439217F35260069CC57 /* RealmDeleteTests.swift */,
+				B8D2D43B217F35260069CC57 /* RealmExecuteTests.swift */,
+				B8D2D43C217F35260069CC57 /* RealmFetchTests.swift */,
+				B8D2D43D217F35260069CC57 /* RealmObservableTests.swift */,
+				B8D2D437217F35260069CC57 /* RealmUpdateTests.swift */,
+				B8D2D43A217F35260069CC57 /* RealmUpsertTests.swift */,
+			);
+			path = Realm;
 			sourceTree = "<group>";
 		};
 		C533724D1E26155D004ECBCF = {
@@ -187,9 +230,9 @@
 		C533726E1E261A30004ECBCF /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				C53372781E261A30004ECBCF /* User.swift */,
 				C533726F1E261A30004ECBCF /* CoreData */,
 				C53372751E261A30004ECBCF /* Realm */,
+				C53372781E261A30004ECBCF /* User.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -429,16 +472,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B8D2D434217F35200069CC57 /* CoreDataObservableTests.swift in Sources */,
+				B8D2D442217F35260069CC57 /* RealmExecuteTests.swift in Sources */,
+				B8D2D435217F35200069CC57 /* CoreDataFetchTests.swift in Sources */,
+				B8D2D444217F35260069CC57 /* RealmObservableTests.swift in Sources */,
+				B8D2D441217F35260069CC57 /* RealmUpsertTests.swift in Sources */,
 				B8275B001E4B6D2600232EE4 /* DBClientTest.swift in Sources */,
-				B8477E9C1E4DC0EA00608B78 /* CreateTests.swift in Sources */,
-				B8477EA01E4DC0EA00608B78 /* UpdateTests.swift in Sources */,
+				B8D2D43F217F35260069CC57 /* RealmCreateTests.swift in Sources */,
+				B8D2D436217F35200069CC57 /* CoreDataCreateTests.swift in Sources */,
+				B8D2D448217F36DC0069CC57 /* DBClientCoreDataTest.swift in Sources */,
+				B8D2D431217F35200069CC57 /* CoreDataExecuteTests.swift in Sources */,
+				B8D2D443217F35260069CC57 /* RealmFetchTests.swift in Sources */,
+				B8D2D433217F35200069CC57 /* CoreDataUpdateTests.swift in Sources */,
+				B8D2D440217F35260069CC57 /* RealmDeleteTests.swift in Sources */,
+				B8D2D432217F35200069CC57 /* CoreDataDeleteTests.swift in Sources */,
 				B8477EA21E4DC0EA00608B78 /* User+Equtable.swift in Sources */,
-				B88711421E5211AF00189D40 /* ObservableTests.swift in Sources */,
+				B8D2D446217F36B40069CC57 /* DBClientRealmTest.swift in Sources */,
+				B8D2D43E217F35260069CC57 /* RealmUpdateTests.swift in Sources */,
+				B8D2D430217F35200069CC57 /* CoreDataUpsertTests.swift in Sources */,
 				B8477EA11E4DC0EA00608B78 /* User+Comparable.swift in Sources */,
-				B8477E9D1E4DC0EA00608B78 /* DeleteTests.swift in Sources */,
-				B8477E9F1E4DC0EA00608B78 /* FetchTests.swift in Sources */,
-				B8E447AB1E54916E0078D81A /* UpsertTests.swift in Sources */,
-				B8477E9E1E4DC0EA00608B78 /* ExecuteTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
