@@ -1,19 +1,19 @@
 PODS:
-  - DBClient/Core (1.2):
-    - YALResult (= 1.1)
-  - DBClient/CoreData (1.2):
+  - DBClient/Core (1.4):
+    - YALResult (= 1.4)
+  - DBClient/CoreData (1.4):
     - DBClient/Core
-    - YALResult (= 1.1)
-  - DBClient/Realm (1.2):
+    - YALResult (= 1.4)
+  - DBClient/Realm (1.4):
     - DBClient/Core
-    - RealmSwift (~> 3.11.1)
-    - YALResult (= 1.1)
-  - Realm (3.11.1):
-    - Realm/Headers (= 3.11.1)
-  - Realm/Headers (3.11.1)
-  - RealmSwift (3.11.1):
-    - Realm (= 3.11.1)
-  - YALResult (1.1)
+    - RealmSwift (~> 3.15.0)
+    - YALResult (= 1.4)
+  - Realm (3.15.0):
+    - Realm/Headers (= 3.15.0)
+  - Realm/Headers (3.15.0)
+  - RealmSwift (3.15.0):
+    - Realm (= 3.15.0)
+  - YALResult (1.4)
 
 DEPENDENCIES:
   - DBClient/CoreData (from `../`)
@@ -30,10 +30,10 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  DBClient: 28d90aa11a7ba462416ccc2e91bfb19282cf5941
-  Realm: 037c5919b9ceb59d6beed5d3b031096856b119b3
-  RealmSwift: c9580133e73ef40ed340401af2dbc9a5790dfea7
-  YALResult: e7acf1405252ef9a2a1f121176cc44b588844d93
+  DBClient: e97c5dd333ac354778f17740ea7bcd6e27645ce9
+  Realm: 9b834e1be6062f544805252c812348872dc5d4ed
+  RealmSwift: 8a41886f8ab6efef9eb8df97de2f2bb911561a79
+  YALResult: 26915691cdd19269936336d6f28e1a015c64175e
 
 PODFILE CHECKSUM: 01e2cf56f70348c45b9e7248a505591dd86d210b
 
