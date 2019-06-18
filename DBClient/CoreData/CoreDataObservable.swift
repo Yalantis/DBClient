@@ -111,6 +111,10 @@ private class FetchedResultsControllerDelegate<T: NSManagedObject>: NSObject, NS
             
         case .update, .move:
             batchChanges.append(.update(indexPath!.row, object))
+            
+        @unknown
+        default:
+            assertionFailure("trying to handle unknown case \(type)")
         }
     }
     
