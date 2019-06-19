@@ -1,6 +1,6 @@
 # DBClient
 
-[![cocoapods](https://img.shields.io/cocoapods/v/DBClient.svg)](https://img.shields.io/cocoapods/v/DBClient.svg) ![swift](https://img.shields.io/badge/Swift-4.2-orange.svg) ![Platform](http://img.shields.io/badge/platform-iOS-blue.svg?style=flat) [![License](http://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/Yalantis/DBClient/blob/master/LICENSE)
+[![cocoapods](https://img.shields.io/cocoapods/v/DBClient.svg)](https://img.shields.io/cocoapods/v/DBClient.svg) ![swift](https://img.shields.io/badge/Swift-5.0-orange.svg) ![Platform](http://img.shields.io/badge/platform-iOS-blue.svg?style=flat) [![License](http://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/Yalantis/DBClient/blob/master/LICENSE)
 
 ## Integration (Cocoapods)
 
@@ -143,7 +143,7 @@ public func upsertManagedObject(in context: NSManagedObjectContext, existedInsta
 
 | Version | Swift | Dependencies                                | iOS  |
 |----------|-------|----------------------------------------|------|
-| `1.4`     | 5       | RealmSwift 3.15.0, YALResult 1.4  | 10   |
+| `1.4.1`     | 5       | RealmSwift 3.15.0, YALResult 1.4  | 10   |
 | `1.3`     | 4.2    | RealmSwift 3.11.1, YALResult 1.1  | 10   |
 | `1.0`     | 4.2    | RealmSwift 2.10.1, YALResult 1.0  | 10   |
 | `0.7`     | 4.0    | RealmSwift 2.10.1, BoltsSwift 1.4  | 9     |
