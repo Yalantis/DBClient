@@ -218,8 +218,8 @@ internal extension FetchRequest {
     
     func applyTo<T>(realmObjects: Results<T>) -> Results<T> {
         var objects: Results<T> = realmObjects
-        if let sortDescriptor = sortDescriptor, let key = sortDescriptor.key {
-            objects = realmObjects.sorted(byKeyPath: key, ascending: sortDescriptor.ascending)
+        if let sortDescriptors = sortDescriptors?.compactMap(SortDescriptor.init), !sortDescriptors.isEmpty {
+            objects = realmObjects.sorted(by: sortDescriptors)
         }
         if let predicate = predicate {
             objects = objects.filter(predicate)
@@ -227,6 +227,18 @@ internal extension FetchRequest {
         
         return objects
     }
+}
+
+private extension SortDescriptor {
+    
+    init?(_ descriptor: NSSortDescriptor) {
+        if let key = descriptor.key {
+            self = SortDescriptor(keyPath: key, ascending: descriptor.ascending)
+        } else {
+            return nil
+        }
+    }
+    
 }
 
 private extension Array {
