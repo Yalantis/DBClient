@@ -18,7 +18,7 @@ final class MasterViewController: UITableViewController, DBClientInjectable {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let observable = dbClient.observable(for: FetchRequest<User>(sortDescriptor: NSSortDescriptor(key: "name", ascending: true)))
+        let observable = dbClient.observable(for: FetchRequest<User>(sortDescriptors: [NSSortDescriptor(key: "name", ascending: true)]))
         userChangesObservable = observable
         observable.observe { [weak self] changeSet in
             self?.observeChanges(changeSet)

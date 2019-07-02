@@ -11,19 +11,19 @@ import Foundation
 /// Describes a fetch request to get objects from a database.
 public struct FetchRequest<T: Stored> {
     
-    public let sortDescriptor: NSSortDescriptor?
+    public let sortDescriptors: [NSSortDescriptor]?
     public let predicate: NSPredicate?
     public let fetchOffset: Int
     public let fetchLimit: Int
     
     /// - Parameters:
     ///   - predicate: Predicate for objects filtering; nil by default.
-    ///   - sortDescriptor: Sort descriptor; nil by default.
+    ///   - sortDescriptors: Sort descriptors; nil by default.
     ///   - fetchOffset: Offset of data for request; 0 by default (no offset).
     ///   - fetchLimit: Amount of objects to be fetched; no limit if zero given; 0 by default.
-    public init(predicate: NSPredicate? = nil, sortDescriptor: NSSortDescriptor? = nil, fetchOffset: Int = 0, fetchLimit: Int = 0) {
+    public init(predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, fetchOffset: Int = 0, fetchLimit: Int = 0) {
         self.predicate = predicate
-        self.sortDescriptor = sortDescriptor
+        self.sortDescriptors = sortDescriptors
         self.fetchOffset = fetchOffset
         self.fetchLimit = fetchLimit
     }
@@ -75,19 +75,23 @@ public extension FetchRequest {
 public extension FetchRequest {
     
     func sorted(with sortDescriptor: NSSortDescriptor) -> FetchRequest<T> {
-        return request(withSortDescriptor: sortDescriptor)
+        return request(withSortDescriptors: [sortDescriptor])
+    }
+    
+    func sorted(with sortDescriptors: [NSSortDescriptor]) -> FetchRequest<T> {
+        return request(withSortDescriptors: sortDescriptors)
     }
     
     func sorted(with key: String?, ascending: Bool, comparator cmptr: @escaping Comparator) -> FetchRequest<T> {
-        return request(withSortDescriptor: NSSortDescriptor(key: key, ascending: ascending, comparator: cmptr))
+        return request(withSortDescriptors: [NSSortDescriptor(key: key, ascending: ascending, comparator: cmptr)])
     }
     
     func sorted(with key: String?, ascending: Bool) -> FetchRequest<T> {
-        return request(withSortDescriptor: NSSortDescriptor(key: key, ascending: ascending))
+        return request(withSortDescriptors: [NSSortDescriptor(key: key, ascending: ascending)])
     }
     
     func sorted(with key: String?, ascending: Bool, selector: Selector) -> FetchRequest<T> {
-        return request(withSortDescriptor: NSSortDescriptor(key: key, ascending: ascending, selector: selector))
+        return request(withSortDescriptors: [NSSortDescriptor(key: key, ascending: ascending, selector: selector)])
     }
 }
 
@@ -96,10 +100,10 @@ public extension FetchRequest {
 private extension FetchRequest {
     
     func request(withPredicate predicate: NSPredicate) -> FetchRequest<T> {
-        return FetchRequest<T>(predicate: predicate, sortDescriptor: sortDescriptor, fetchOffset: fetchOffset, fetchLimit: fetchLimit)
+        return FetchRequest<T>(predicate: predicate, sortDescriptors: sortDescriptors, fetchOffset: fetchOffset, fetchLimit: fetchLimit)
     }
     
-    func request(withSortDescriptor sortDescriptor: NSSortDescriptor) -> FetchRequest<T> {
-        return FetchRequest<T>(predicate: predicate, sortDescriptor: sortDescriptor, fetchOffset: fetchOffset, fetchLimit: fetchLimit)
+    func request(withSortDescriptors sortDescriptors: [NSSortDescriptor]) -> FetchRequest<T> {
+        return FetchRequest<T>(predicate: predicate, sortDescriptors: sortDescriptors, fetchOffset: fetchOffset, fetchLimit: fetchLimit)
     }
 }

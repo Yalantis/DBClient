@@ -285,7 +285,7 @@ extension CoreDataDBClient: DBClient {
         performReadTask { context in
             let fetchRequest = self.fetchRequest(for: coreDataModelType)
             fetchRequest.predicate = request.predicate
-            fetchRequest.sortDescriptors = [request.sortDescriptor].compactMap { $0 }
+            fetchRequest.sortDescriptors = request.sortDescriptors
             fetchRequest.fetchLimit = request.fetchLimit
             fetchRequest.fetchOffset = request.fetchOffset
             do {
@@ -405,7 +405,7 @@ extension CoreDataDBClient: DBClient {
         performReadTaskAndWait { context in
             let fetchRequest = self.fetchRequest(for: coreDataModelType)
             fetchRequest.predicate = request.predicate
-            fetchRequest.sortDescriptors = [request.sortDescriptor].compactMap { $0 }
+            fetchRequest.sortDescriptors = request.sortDescriptors
             fetchRequest.fetchLimit = request.fetchLimit
             fetchRequest.fetchOffset = request.fetchOffset
             do {
