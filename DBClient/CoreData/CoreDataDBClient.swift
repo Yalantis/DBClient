@@ -506,6 +506,7 @@ extension CoreDataDBClient: DBClient {
         
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: type.entityName)
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        deleteRequest.resultType = .resultTypeObjectIDs
         performWriteTask { [weak mainContext] context, savingClosure in
             do {
                 let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
