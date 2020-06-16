@@ -38,7 +38,7 @@ public protocol CoreDataModelConvertible: Stored {
 }
 
 extension NSManagedObject: Stored {
-
+    
     public static var primaryKeyName: String? { return nil }
     
     public var valueOfPrimaryKey: CVarArg? { return nil }
@@ -281,7 +281,7 @@ extension CoreDataDBClient: DBClient {
     
     public func execute<T>(_ request: FetchRequest<T>, completion: @escaping (Result<[T]>) -> Void) where T: Stored {
         let coreDataModelType = checkType(T.self)
-
+        
         performReadTask { context in
             let fetchRequest = self.fetchRequest(for: coreDataModelType)
             fetchRequest.predicate = request.predicate
@@ -303,7 +303,7 @@ extension CoreDataDBClient: DBClient {
     /// If appropriate object already exists in DB it will be ignored and nothing will be inserted
     public func insert<T>(_ objects: [T], completion: @escaping (Result<[T]>) -> Void) where T: Stored {
         checkType(T.self)
-
+        
         performWriteTask { context, savingClosure in
             var insertedObjects = [T]()
             let foundObjects = self.find(objects: objects, in: context)
@@ -329,7 +329,7 @@ extension CoreDataDBClient: DBClient {
     /// if there is no such object in db nothing will happened
     public func update<T>(_ objects: [T], completion: @escaping (Result<[T]>) -> Void) where T: Stored {
         checkType(T.self)
-
+        
         performWriteTask { context, savingClosure in
             var updatedObjects = [T]()
             
@@ -355,7 +355,7 @@ extension CoreDataDBClient: DBClient {
     /// Update object if it exists or insert new one otherwise
     public func upsert<T>(_ objects: [T], completion: @escaping (Result<(updated: [T], inserted: [T])>) -> Void) where T: Stored {
         checkType(T.self)
-
+        
         performWriteTask { context, savingClosure in
             var updatedObjects = [T]()
             var insertedObjects = [T]()
@@ -383,7 +383,7 @@ extension CoreDataDBClient: DBClient {
     /// After all deletes try to save context
     public func delete<T>(_ objects: [T], completion: @escaping (Result<()>) -> Void) where T: Stored {
         checkType(T.self)
-
+        
         performWriteTask { context, savingClosure in
             let foundObjects = self.find(objects, in: context)
             foundObjects.forEach { context.delete($0) }
@@ -426,7 +426,7 @@ extension CoreDataDBClient: DBClient {
         checkType(T.self)
         
         var result: Result<[T]>!
-            
+        
         performWriteTaskAndWait { context, savingClosure in
             var insertedObjects = [T]()
             let foundObjects = self.find(objects: objects, in: context)
@@ -506,9 +506,15 @@ extension CoreDataDBClient: DBClient {
         
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: type.entityName)
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        performWriteTask { context, savingClosure in
+        performWriteTask { [weak mainContext] context, savingClosure in
             do {
-                try context.execute(deleteRequest)
+                let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
+                if let objectIDs = result?.result as? [NSManagedObjectID] {
+                    for objectID in objectIDs {
+                        guard let object = mainContext?.object(with: objectID) else { continue }
+                        mainContext?.delete(object)
+                    }
+                }
                 try savingClosure()
                 completion(.success(()))
             } catch {
