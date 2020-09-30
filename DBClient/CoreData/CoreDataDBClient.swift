@@ -95,8 +95,8 @@ public class CoreDataDBClient {
     
     private lazy var managedObjectModel: NSManagedObjectModel = {
         guard let modelURL = self.bundle.url(forResource: self.modelName, withExtension: "momd"),
-            let objectModel = NSManagedObjectModel(contentsOf: modelURL) else {
-                fatalError("Can't find managedObjectModel named \(self.modelName) in \(self.bundle)")
+              let objectModel = NSManagedObjectModel(contentsOf: modelURL) else {
+            fatalError("Can't find managedObjectModel named \(self.modelName) in \(self.bundle)")
         }
         
         return objectModel
@@ -506,16 +506,9 @@ extension CoreDataDBClient: DBClient {
         
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: type.entityName)
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        deleteRequest.resultType = .resultTypeObjectIDs
-        performWriteTask { [weak mainContext] context, savingClosure in
+        performWriteTask { context, savingClosure in
             do {
-                let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
-                if let objectIDs = result?.result as? [NSManagedObjectID] {
-                    for objectID in objectIDs {
-                        guard let object = mainContext?.object(with: objectID) else { continue }
-                        mainContext?.delete(object)
-                    }
-                }
+                try context.execute(deleteRequest)
                 try savingClosure()
                 completion(.success(()))
             } catch {
