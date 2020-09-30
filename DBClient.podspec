@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'DBClient'
-  s.version          = '1.4.2'
+  s.version          = '1.4.3'
   s.requires_arc = true
   s.summary          = 'CoreData & Realm wrapper written on Swift'
   s.homepage         = ''
