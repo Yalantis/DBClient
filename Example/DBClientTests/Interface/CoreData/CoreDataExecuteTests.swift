@@ -96,7 +96,7 @@ final class CoreDataExecuteTests: DBClientCoreDataTest {
         
         self.dbClient.insert(randomUsers) { result in
             if result.value != nil {
-                let request = FetchRequest<User>(sortDescriptor: sortDescriptor)
+                let request = FetchRequest<User>(sortDescriptors: [sortDescriptor])
                 
                 self.dbClient.execute(request) { result in
                     expectedUsers = result.value ?? []

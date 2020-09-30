@@ -32,21 +32,21 @@ enum CoreDataChange<T> {
     
     var isDeletion: Bool {
         switch self {
-        case .delete(_): return true
+        case .delete(_, _): return true
         default: return false
         }
     }
     
     var isUpdate: Bool {
         switch self {
-        case .update(_): return true
+        case .update(_, _): return true
         default: return false
         }
     }
     
     var isInsertion: Bool {
         switch self {
-        case .insert(_): return true
+        case .insert(_, _): return true
         default: return false
         }
     }
