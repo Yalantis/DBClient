@@ -63,30 +63,28 @@ class CoreDataObservable<T: Stored, U: NSManagedObject>: RequestObservable<T> {
             fatalError("CoreDataDBClient can manage only types which conform to CoreDataModelConvertible")
         }
         
+        observer = closure
+        fetchedResultsControllerDelegate.observer = { [unowned self] (change: ObservableChange<U>) in
+            guard case .change(let change) = change else { return }
+            let mappedInsertions = change.insertions.map { ($0, coreDataModelType.from($1) as! T) }
+            let mappedModifications = change.modifications.map { ($0, coreDataModelType.from($1) as! T) }
+            let mappedObjects = change.objects.map { coreDataModelType.from($0) as! T }
+            let mappedChange: ObservableChange<T>.ModelChange = (
+                objects: mappedObjects,
+                deletions: change.deletions,
+                insertions: mappedInsertions,
+                modifications: mappedModifications
+            )
+            self.observer?(.change(mappedChange))
+        }
         do {
-            let initial = try fetchedResultsController.managedObjectContext.fetch(fetchRequest)
-            let mapped = initial.map { coreDataModelType.from($0) as! T }
-            closure(.initial(mapped))
-            observer = closure
-            
-            fetchedResultsControllerDelegate.observer = { [unowned self] (change: ObservableChange<U>) in
-                guard case .change(let change) = change else { return }
-                let mappedInsertions = change.insertions.map { ($0, coreDataModelType.from($1) as! T) }
-                let mappedModifications = change.modifications.map { ($0, coreDataModelType.from($1) as! T) }
-                let mappedObjects = change.objects.map { coreDataModelType.from($0) as! T }
-                let mappedChange: ObservableChange<T>.ModelChange = (
-                    objects: mappedObjects,
-                    deletions: change.deletions,
-                    insertions: mappedInsertions,
-                    modifications: mappedModifications
-                )
-                self.observer?(.change(mappedChange))
-            }
-            
             try fetchedResultsController.performFetch()
         } catch let error {
             closure(.error(error))
         }
+        let initial = fetchedResultsController.fetchedObjects ?? []
+        let mapped = initial.map { coreDataModelType.from($0) as! T }
+        closure(.initial(mapped))
     }
     
 }
