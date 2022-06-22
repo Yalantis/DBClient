@@ -582,7 +582,7 @@ private extension CoreDataDBClient {
             return []
         }
         
-        let ids = objects.compactMap { $0.valueOfPrimaryKey }
+        let ids = objects.compactMap { $0.valueOfPrimaryKey } as NSArray
         let fetchRequest = self.fetchRequest(for: coreDataModelType)
         fetchRequest.predicate = NSPredicate(format: "\(primaryKeyName) IN %@", ids)
         guard let result = try? context.fetch(fetchRequest), let storedObjects = result as? [NSManagedObject] else {
